@@ -83,6 +83,23 @@
   .stay{padding:6px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
   html{scrollbar-width:none}
   html::-webkit-scrollbar{display:none}
+  /* centre the card: take the glows out of the layout */
+  .orbs{position:absolute;inset:0;pointer-events:none}
+  
+  /* bigger card */
+  .ld{width:min(440px,90vw);padding:40px 36px 34px;border-radius:30px}
+  .ld h2{font-size:22px;margin-bottom:8px}
+  .ld .msg{font-size:15px;min-height:22px}
+  
+  /* bigger logo ring */
+  .ring{width:132px;height:132px;margin-bottom:22px}
+  .ring::before{
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
+    mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px))}
+  .ring img{width:100px;height:100px}
+  
+  /* thicker progress bar */
+  .track{height:8px;margin:24px 6px 0}
 </style>
 </head>
 <body>
