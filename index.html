@@ -75,12 +75,14 @@
 
   .auto{display:flex;align-items:center;gap:12px;text-align:left;background:var(--soft);border-radius:18px;padding:12px 14px;margin:0 0 16px}
   .auto[hidden]{display:none}
-  .auto>div{flex:1}
+  .auto>div:not(.spin){flex:1}
   .auto b{display:block;font-size:14px}
   .auto span{font-size:13px;color:var(--mute)}
   .spin{flex:none;width:22px;height:22px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--pri);animation:sp .8s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
   .stay{padding:6px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+  html{scrollbar-width:none}
+  html::-webkit-scrollbar{display:none}
 </style>
 </head>
 <body>
