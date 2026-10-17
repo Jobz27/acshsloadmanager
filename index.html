@@ -37,7 +37,40 @@
   #appWrap{position:fixed;inset:0;z-index:10;background:var(--bg)}
   #appWrap[hidden]{display:none}
   #app{width:100%;height:100%;border:0;display:block}
-  .apploading{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:12px;background:var(--bg);color:var(--mute);font-weight:600}
+  .apploading{position:absolute;inset:0;z-index:2;display:grid;place-items:center;overflow:hidden;background:var(--bg);
+    transition:opacity .45s ease,visibility .45s}
+  .apploading.out{opacity:0;visibility:hidden}
+  
+  .orbs i{position:absolute;border-radius:50%;filter:blur(64px);opacity:.5;animation:drift 12s ease-in-out infinite}
+  .orbs i:nth-child(1){width:340px;height:340px;left:-80px;top:-60px;background:#5b5bf0}
+  .orbs i:nth-child(2){width:300px;height:300px;right:-70px;bottom:-60px;background:#8b5cf6;animation-delay:-4s}
+  .orbs i:nth-child(3){width:220px;height:220px;right:30%;top:58%;background:#06b6d4;opacity:.3;animation-delay:-8s}
+  @keyframes drift{50%{transform:translate(40px,-30px) scale(1.12)}}
+  
+  .ld{position:relative;width:min(340px,86vw);text-align:center;padding:30px 26px 26px;border-radius:26px;
+    background:color-mix(in srgb,var(--card) 82%,transparent);backdrop-filter:blur(14px);
+    border:1px solid var(--line);box-shadow:0 24px 70px rgba(40,40,110,.25)}
+  .ld h2{margin:0 0 6px;font-size:17px;font-weight:800;letter-spacing:-.3px;color:var(--ink)}
+  .ld .msg{min-height:20px;font-size:13.5px;font-weight:600;color:var(--mute);transition:opacity .18s}
+  
+  .ring{position:relative;width:96px;height:96px;margin:0 auto 16px;display:grid;place-items:center}
+  .ring::before{content:"";position:absolute;inset:0;border-radius:50%;
+    background:conic-gradient(from 0deg,transparent 0 50%,var(--pri),var(--pri2),transparent);
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));
+    mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));
+    animation:ringspin 1.2s linear infinite}
+  .ring img{width:74px;height:74px;border-radius:50%;object-fit:contain;animation:pulse 2s ease-in-out infinite}
+  @keyframes ringspin{to{transform:rotate(360deg)}}
+  @keyframes pulse{50%{transform:scale(1.07)}}
+  
+  .track{height:6px;margin:18px 4px 0;border-radius:99px;background:var(--line);overflow:hidden}
+  .track i{display:block;position:relative;overflow:hidden;height:100%;width:6%;border-radius:99px;
+    background:linear-gradient(90deg,var(--pri),var(--pri2));transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  .track i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+    transform:translateX(-100%);animation:shine 1.4s linear infinite}
+  @keyframes shine{to{transform:translateX(100%)}}
+  
+  @media(prefers-reduced-motion:reduce){.apploading *,.apploading *::before,.apploading *::after{animation:none!important}}
   html.running,html.running body{overflow:hidden;height:100%}
 </style>
 </head>
@@ -71,9 +104,14 @@
     <div class="foot">Your loading is only visible to you and the SHS Coordinator.</div>
   </main>
 
-  <div id="appWrap" hidden>
-    <iframe id="app" title="Asian College Senior High School Load Manager" allow="fullscreen"></iframe>
-    <div id="appLoad" class="apploading"><div class="spin"></div><span>Opening Load Manager…</span></div>
+  <div id="appLoad" class="apploading">
+    <div class="orbs"><i></i><i></i><i></i></div>
+    <div class="ld">
+      <div class="ring"><img alt="" src="https://i.ibb.co/Y7gR9QbY/AC-SHS-Logo.png"></div>
+      <h2>Faculty &amp; Section Loading</h2>
+      <div class="msg" id="ldMsg">Connecting to your school account…</div>
+      <div class="track"><i id="ldBar"></i></div>
+    </div>
   </div>
 
 <script>
@@ -89,6 +127,7 @@
     if (started) return; started = true;
     $('appWrap').hidden = false;
     document.documentElement.classList.add('running');
+    startLoader();
     $('app').src = APP_URL;
     const fallback = setTimeout(() => location.replace(APP_URL), 8000);
     window.addEventListener('message', e => {
@@ -96,10 +135,32 @@
       try { ok = /\.googleusercontent\.com$/.test(new URL(e.origin).hostname); } catch (x) {}
       if (ok && e.data && e.data.acLoadManager === 'ready') {
         clearTimeout(fallback);
-        const l = $('appLoad'); if (l) l.remove();
+        finishLoader();
       }
     });
   }
+
+  const MSGS = ['Connecting to your school account…', 'Checking your access…', 'Loading your schedule…', 'Almost there…'];
+let msgTimer, barTimer;
+
+function startLoader() {
+  const msg = $('ldMsg'), bar = $('ldBar'); let i = 0, p = 8;
+  bar.style.width = p + '%';
+  msgTimer = setInterval(() => {
+    i++;
+    msg.style.opacity = 0;
+    setTimeout(() => { msg.textContent = MSGS[i]; msg.style.opacity = 1; }, 180);
+    if (i >= MSGS.length - 1) clearInterval(msgTimer);
+  }, 1800);
+  barTimer = setInterval(() => { p += (90 - p) * 0.12; bar.style.width = p + '%'; }, 500);
+}
+
+function finishLoader() {
+  clearInterval(msgTimer); clearInterval(barTimer);
+  const l = $('appLoad'); if (!l) return;
+  $('ldMsg').textContent = 'Welcome!'; $('ldBar').style.width = '100%';
+  setTimeout(() => { l.classList.add('out'); setTimeout(() => l.remove(), 500); }, 350);
+}
 
   $('go').href = APP_URL;
   $('go').addEventListener('click', e => { e.preventDefault(); openApp(); });
