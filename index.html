@@ -84,7 +84,7 @@
     if (known && !tried && !force) {
       sessionStorage.setItem('ac_auto', '1');
       $('auto').hidden = false;
-      let n = 3;
+      let n = 1;
       const timer = setInterval(() => {
         n--;
         if (n <= 0) { clearInterval(timer); location.replace(APP_URL); }
