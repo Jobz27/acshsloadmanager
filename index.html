@@ -41,6 +41,11 @@
     <h1>Faculty &amp; Section Loading</h1>
     <p>Asian College · Senior High School</p>
 
+    <div id="auto" class="auto" hidden>
+      <div class="spin"></div>
+      <div><b>Opening your loading…</b><span id="cd">Taking you in 3s</span></div>
+      <button id="stay" class="stay" type="button">Cancel</button>
+    </div>
     <div class="need">
       <i>🔐</i>
       <div><b>Sign in with your school email</b><span>Use your <b style="display:inline">@asiancollege.edu.ph</b> Google account to open your loading.</span></div>
@@ -62,10 +67,32 @@
   </main>
 
 <script>
-  const APP_URL = "https://script.google.com/a/macros/asiancollege.edu.ph/s/AKfycbwk5sy4hql54rpWRsr0XIM3Ye_hPyk7TlQntpqBcSu_-fIA9yTZ96mH3RzwQCDS6km1/exec";
-  document.getElementById('go').href = APP_URL;
-  document.getElementById('switch').href =
-    "https://accounts.google.com/AccountChooser?hd=asiancollege.edu.ph&continue=" + encodeURIComponent(APP_URL);
+  const APP_URL = "https://script.google.com/a/macros/asiancollege.edu.ph/s/AKfycbwk5sy4hql54rpWRsr0XIM3Ye_hPyk7TlQntpqBcSu_-fIA9yTZ96mH3RzwQCDS6km1/exec", KEY = 'ac_ok';
+  const $ = id => document.getElementById(id);
+  const remember = () => { try { localStorage.setItem(KEY, '1'); } catch (e) {} };
+  const forget = () => { try { localStorage.removeItem(KEY); } catch (e) {} };
+
+  $('go').href = APP_URL;
+  $('switch').href = "https://accounts.google.com/AccountChooser?hd=asiancollege.edu.ph&continue=" + encodeURIComponent(APP_URL);
+  $('go').addEventListener('click', remember);
+  $('switch').addEventListener('click', remember);
+
+  try {
+    const force = location.search.indexOf('switch') >= 0;
+    const known = localStorage.getItem(KEY) === '1';
+    const tried = sessionStorage.getItem('ac_auto') === '1';   // stops a redirect loop when pressing Back
+    if (known && !tried && !force) {
+      sessionStorage.setItem('ac_auto', '1');
+      $('auto').hidden = false;
+      let n = 3;
+      const timer = setInterval(() => {
+        n--;
+        if (n <= 0) { clearInterval(timer); location.replace(APP_URL); }
+        else $('cd').textContent = 'Taking you in ' + n + 's';
+      }, 1000);
+      $('stay').onclick = () => { clearInterval(timer); $('auto').hidden = true; forget(); };
+    }
+  } catch (e) {}
 </script>
 </body>
 </html>
