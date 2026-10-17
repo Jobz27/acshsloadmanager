@@ -37,7 +37,7 @@
   #appWrap{position:fixed;inset:0;z-index:10;background:var(--bg)}
   #appWrap[hidden]{display:none}
   #app{width:100%;height:100%;border:0;display:block}
-  .apploading{position:absolute;inset:0;z-index:2;display:grid;place-items:center;overflow:hidden;background:var(--bg);
+  .apploading{position:absolute;inset:0;z-index:2;display:grid;place-ite:center;overflow:hidden;background:var(--bg);
     transition:opacity .45s ease,visibility .45s}
   .apploading.out{opacity:0;visibility:hidden}
   
@@ -51,9 +51,9 @@
     background:color-mix(in srgb,var(--card) 82%,transparent);backdrop-filter:blur(14px);
     border:1px solid var(--line);box-shadow:0 24px 70px rgba(40,40,110,.25)}
   .ld h2{margin:0 0 6px;font-size:17px;font-weight:800;letter-spacing:-.3px;color:var(--ink)}
-  .ld .msg{min-height:20px;font-size:13.5px;font-weight:600;color:var(--mute);transition:opacity .18s}
+  .ld .g{min-height:20px;font-size:13.5px;font-weight:600;color:var(--mute);transition:opacity .18s}
   
-  .ring{position:relative;width:96px;height:96px;margin:0 auto 16px;display:grid;place-items:center}
+  .ring{position:relative;width:96px;height:96px;margin:0 auto 16px;display:grid;place-ite:center}
   .ring::before{content:"";position:absolute;inset:0;border-radius:50%;
     background:conic-gradient(from 0deg,transparent 0 50%,var(--pri),var(--pri2),transparent);
     -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));
@@ -73,7 +73,7 @@
   @media(prefers-reduced-motion:reduce){.apploading *,.apploading *::before,.apploading *::after{animation:none!important}}
   html.running,html.running body{overflow:hidden;height:100%}
 
-  .auto{display:flex;align-items:center;gap:12px;text-align:left;background:var(--soft);border-radius:18px;padding:12px 14px;margin:0 0 16px}
+  .auto{display:flex;align-ite:center;gap:12px;text-align:left;background:var(--soft);border-radius:18px;padding:12px 14px;margin:0 0 16px}
   .auto[hidden]{display:none}
   .auto>div:not(.spin){flex:1}
   .auto b{display:block;font-size:14px}
@@ -89,7 +89,7 @@
   /* bigger card */
   .ld{width:min(440px,90vw);padding:40px 36px 34px;border-radius:30px}
   .ld h2{font-size:22px;margin-bottom:8px}
-  .ld .msg{font-size:15px;min-height:22px}
+  .ld .g{font-size:15px;min-height:22px}
   
   /* bigger logo ring */
   .ring{width:132px;height:132px;margin-bottom:22px}
@@ -162,7 +162,7 @@
     document.documentElement.classList.add('running');
     startLoader();
     $('app').src = APP_URL;
-    const fallback = setTimeout(() => location.replace(APP_URL), 8000);
+    const fallback = setTimeout(() => location.replace(APP_URL), 3000);
     window.addEventListener('message', e => {
       let ok = false;
       try { ok = /\.googleusercontent\.com$/.test(new URL(e.origin).hostname); } catch (x) {}
