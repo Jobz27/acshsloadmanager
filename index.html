@@ -37,7 +37,7 @@
   #appWrap{position:fixed;inset:0;z-index:10;background:var(--bg)}
   #appWrap[hidden]{display:none}
   #app{width:100%;height:100%;border:0;display:block}
-  .apploading{position:absolute;inset:0;z-index:2;display:grid;place-ite:center;overflow:hidden;background:var(--bg);
+  .apploading{position:absolute;inset:0;z-index:2;display:grid;place-items:center;overflow:hidden;background:var(--bg);
     transition:opacity .45s ease,visibility .45s}
   .apploading.out{opacity:0;visibility:hidden}
   
@@ -53,7 +53,7 @@
   .ld h2{margin:0 0 6px;font-size:17px;font-weight:800;letter-spacing:-.3px;color:var(--ink)}
   .ld .g{min-height:20px;font-size:13.5px;font-weight:600;color:var(--mute);transition:opacity .18s}
   
-  .ring{position:relative;width:96px;height:96px;margin:0 auto 16px;display:grid;place-ite:center}
+  .ring{position:relative;width:96px;height:96px;margin:0 auto 16px;display:grid;place-items:center}
   .ring::before{content:"";position:absolute;inset:0;border-radius:50%;
     background:conic-gradient(from 0deg,transparent 0 50%,var(--pri),var(--pri2),transparent);
     -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));
