@@ -162,7 +162,7 @@
     document.documentElement.classList.add('running');
     startLoader();
     $('app').src = APP_URL;
-    const fallback = setTimeout(() => location.replace(APP_URL), 3000);
+    const fallback = setTimeout(() => location.replace(APP_URL), 5000);
     window.addEventListener('message', e => {
       let ok = false;
       try { ok = /\.googleusercontent\.com$/.test(new URL(e.origin).hostname); } catch (x) {}
