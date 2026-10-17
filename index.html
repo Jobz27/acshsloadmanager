@@ -33,6 +33,11 @@
   .help b{display:block;margin-bottom:4px}
   .help ol{margin:6px 0 0;padding-left:18px;color:var(--mute)}
   .foot{margin-top:18px;font-size:12px;color:var(--mute)}
+
+  #appWrap{position:fixed;inset:0;z-index:10;background:var(--bg)}
+  #appWrap[hidden]{display:none}
+  #app{width:100%;height:100%;border:0;display:block}
+  .apploading{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:12px;background:var(--bg);color:var(--mute);font-weight:600}
 </style>
 </head>
 <body>
@@ -65,28 +70,51 @@
     <div class="foot">Your loading is only visible to you and the SHS Coordinator.</div>
   </main>
 
+  <div id="appWrap" hidden>
+    <iframe id="app" title="Asian College Senior High School Load Manager" allow="fullscreen"></iframe>
+    <div id="appLoad" class="apploading"><div class="spin"></div><span>Opening Load Manager…</span></div>
+  </div>
+
 <script>
   const APP_URL = "https://script.google.com/a/macros/asiancollege.edu.ph/s/AKfycbwk5sy4hql54rpWRsr0XIM3Ye_hPyk7TlQntpqBcSu_-fIA9yTZ96mH3RzwQCDS6km1/exec", KEY = 'ac_ok';
   const $ = id => document.getElementById(id);
   const remember = () => { try { localStorage.setItem(KEY, '1'); } catch (e) {} };
   const forget = () => { try { localStorage.removeItem(KEY); } catch (e) {} };
+  let started = false;
+
+  /* try the app inside this page; if it doesn't report in, go to the real link */
+  function openApp() {
+    remember();
+    if (started) return; started = true;
+    $('appWrap').hidden = false;
+    $('app').src = APP_URL;
+    const fallback = setTimeout(() => location.replace(APP_URL), 8000);
+    window.addEventListener('message', e => {
+      let ok = false;
+      try { ok = /\.googleusercontent\.com$/.test(new URL(e.origin).hostname); } catch (x) {}
+      if (ok && e.data && e.data.acLoadManager === 'ready') {
+        clearTimeout(fallback);
+        const l = $('appLoad'); if (l) l.remove();
+      }
+    });
+  }
 
   $('go').href = APP_URL;
+  $('go').addEventListener('click', e => { e.preventDefault(); openApp(); });
   $('switch').href = "https://accounts.google.com/AccountChooser?hd=asiancollege.edu.ph&continue=" + encodeURIComponent(APP_URL);
-  $('go').addEventListener('click', remember);
   $('switch').addEventListener('click', remember);
 
   try {
     const force = location.search.indexOf('switch') >= 0;
     const known = localStorage.getItem(KEY) === '1';
-    const tried = sessionStorage.getItem('ac_auto') === '1';   // stops a redirect loop when pressing Back
+    const tried = sessionStorage.getItem('ac_auto') === '1';
     if (known && !tried && !force) {
       sessionStorage.setItem('ac_auto', '1');
       $('auto').hidden = false;
-      let n = 1;
+      let n = 3;
       const timer = setInterval(() => {
         n--;
-        if (n <= 0) { clearInterval(timer); location.replace(APP_URL); }
+        if (n <= 0) { clearInterval(timer); openApp(); }
         else $('cd').textContent = 'Taking you in ' + n + 's';
       }, 1000);
       $('stay').onclick = () => { clearInterval(timer); $('auto').hidden = true; forget(); };
