@@ -1,1 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AC SHS | Load Manager</title>
+<script>try{if(localStorage.getItem('ac_ok')==='1'&&location.search.indexOf('switch')<0)document.documentElement.classList.add('fast')}catch(e){}</script>
+<link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1GMU8Qx-GqOM3ZLO9wwj6WhXXNq0r9oEz">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#e9eaff;--card:#fff;--ink:#171b2d;--mute:#6b7390;--line:#e6e8f2;--pri:#5b5bf0;--pri2:#8b5cf6;--soft:#eef0ff;--warn:#fff7e0;--warnb:#f3d98a}
+  @media(prefers-color-scheme:dark){:root{--bg:#0b0d1a;--card:#171b2e;--ink:#e8eaf6;--mute:#9aa3c2;--line:#2a3048;--pri:#9d9dff;--pri2:#b99cff;--soft:#242a50;--warn:#2d2813;--warnb:#6b5a1f}}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;color:var(--ink);
+    font:15px/1.55 'Plus Jakarta Sans',system-ui,Segoe UI,Roboto,sans-serif;
+    background:radial-gradient(800px 420px at 10% -10%,#c9c8ff55,transparent),radial-gradient(700px 400px at 100% 0,#ecd9ff55,transparent),var(--bg)}
+  .card{width:min(460px,100%);background:var(--card);border:1px solid var(--line);border-radius:28px;padding:34px 30px;
+    box-shadow:0 24px 70px rgba(40,40,110,.18);text-align:center}
+  .logo{width:72px;height:72px;margin:0 auto 14px;border-radius:20px;display:block;object-fit:contain}
+  h1{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-.4px}
+  p{margin:0 0 16px;color:var(--mute)}
+  .need{display:flex;align-items:center;gap:12px;text-align:left;background:var(--soft);border-radius:18px;padding:12px 14px;margin:18px 0}
+  .need i{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-style:normal;font-size:18px;
+    background:linear-gradient(135deg,var(--pri),var(--pri2))}
+  .need b{display:block;font-size:14px}
+  .need span{font-size:13px;color:var(--mute)}
+  .btn{display:block;width:100%;padding:13px 16px;border-radius:14px;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;
+    border:1px solid var(--line);color:var(--ink);background:var(--card);transition:transform .15s,box-shadow .15s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn.pri{border:0;color:#fff;background:linear-gradient(120deg,#5b5bf0,#8b5cf6);box-shadow:0 10px 24px rgba(91,91,240,.35)}
+  .btn.pri:hover{box-shadow:0 14px 30px rgba(91,91,240,.45)}
+  .btn+.btn{margin-top:10px}
+  .help{margin-top:20px;text-align:left;background:var(--warn);border:1px solid var(--warnb);border-radius:16px;padding:12px 14px;font-size:13px;color:var(--ink)}
+  .help b{display:block;margin-bottom:4px}
+  .help ol{margin:6px 0 0;padding-left:18px;color:var(--mute)}
+  .foot{margin-top:18px;font-size:12px;color:var(--mute)}
 
+  #appWrap{position:fixed;inset:0;z-index:10;background:var(--bg)}
+  #appWrap[hidden]{display:none}
+  #app{width:100%;height:100%;border:0;display:block}
+  .apploading{position:absolute;inset:0;z-index:2;display:grid;place-items:center;overflow:hidden;background:var(--bg);
+    transition:opacity .45s ease,visibility .45s}
+  .apploading.out{opacity:0;visibility:hidden}
+  
+  .orbs i{position:absolute;border-radius:50%;filter:blur(64px);opacity:.5;animation:drift 12s ease-in-out infinite}
+  .orbs i:nth-child(1){width:340px;height:340px;left:-80px;top:-60px;background:#5b5bf0}
+  .orbs i:nth-child(2){width:300px;height:300px;right:-70px;bottom:-60px;background:#8b5cf6;animation-delay:-4s}
+  .orbs i:nth-child(3){width:220px;height:220px;right:30%;top:58%;background:#06b6d4;opacity:.3;animation-delay:-8s}
+  @keyframes drift{50%{transform:translate(40px,-30px) scale(1.12)}}
+  
+  .ld{position:relative;width:min(340px,86vw);text-align:center;padding:30px 26px 26px;border-radius:26px;
+    background:color-mix(in srgb,var(--card) 82%,transparent);backdrop-filter:blur(14px);
+    border:1px solid var(--line);box-shadow:0 24px 70px rgba(40,40,110,.25)}
+  .ld h2{margin:0 0 6px;font-size:17px;font-weight:800;letter-spacing:-.3px;color:var(--ink)}
+  .ld .g{min-height:20px;font-size:13.5px;font-weight:600;color:var(--mute);transition:opacity .18s}
+  
+  .ring{position:relative;width:96px;height:96px;margin:0 auto 16px;display:grid;place-items:center}
+  .ring::before{content:"";position:absolute;inset:0;border-radius:50%;
+    background:conic-gradient(from 0deg,transparent 0 50%,var(--pri),var(--pri2),transparent);
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));
+    mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));
+    animation:ringspin 1.2s linear infinite}
+  .ring img{width:74px;height:74px;border-radius:50%;object-fit:contain;animation:pulse 2s ease-in-out infinite}
+  @keyframes ringspin{to{transform:rotate(360deg)}}
+  @keyframes pulse{50%{transform:scale(1.07)}}
+  
+  .track{height:6px;margin:18px 4px 0;border-radius:99px;background:var(--line);overflow:hidden}
+  .track i{display:block;position:relative;overflow:hidden;height:100%;width:6%;border-radius:99px;
+    background:linear-gradient(90deg,var(--pri),var(--pri2));transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  .track i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+    transform:translateX(-100%);animation:shine 1.4s linear infinite}
+  @keyframes shine{to{transform:translateX(100%)}}
+  
+  @media(prefers-reduced-motion:reduce){.apploading *,.apploading *::before,.apploading *::after{animation:none!important}}
+  html.running,html.running body{overflow:hidden;height:100%}
+
+  .auto{display:flex;align-ite:center;gap:12px;text-align:left;background:var(--soft);border-radius:18px;padding:12px 14px;margin:0 0 16px}
+  .auto[hidden]{display:none}
+  .auto>div:not(.spin){flex:1}
+  .auto b{display:block;font-size:14px}
+  .auto span{font-size:13px;color:var(--mute)}
+  .spin{flex:none;width:22px;height:22px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--pri);animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .stay{padding:6px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+  html{scrollbar-width:none}
+  html::-webkit-scrollbar{display:none}
+  /* centre the card: take the glows out of the layout */
+  .orbs{position:absolute;inset:0;pointer-events:none}
+  
+  /* bigger card */
+  .ld{width:min(440px,90vw);padding:40px 36px 34px;border-radius:30px}
+  .ld h2{font-size:22px;margin-bottom:8px}
+  .ld .g{font-size:15px;min-height:22px}
+  
+  /* bigger logo ring */
+  .ring{width:132px;height:132px;margin-bottom:22px}
+  .ring::before{
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));
+    mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px))}
+  .ring img{width:100px;height:100px}
+  
+  /* thicker progress bar */
+  .track{height:8px;margin:24px 6px 0}
+
+  html.fast main.card{display:none}
+  .notice{margin:0 0 16px;text-align:left;background:var(--warn);border:1px solid var(--warnb);border-radius:14px;padding:10px 14px;font-size:13px}
+  .notice[hidden]{display:none}
+</style>
+</head>
+<body>
+  <main class="card">
+    <img class="logo" alt="Asian College" src="https://i.ibb.co/Y7gR9QbY/AC-SHS-Logo.png">
+    <h1>Faculty &amp; Section Loading</h1>
+    <p>Asian College · Senior High School</p>
+
+    <div id="notice" class="notice" hidden><b>We couldn't open your loading automatically.</b><br>Make sure you're signed in with your @asiancollege.edu.ph account, then try again.</div>
+    
+    <div class="need">
+      <i>🔐</i>
+      <div><b>Sign in with your school email</b><span>Use your <b style="display:inline">@asiancollege.edu.ph</b> Google account to open your loading.</span></div>
+    </div>
+
+    <a id="go" class="btn pri" href="#">Open Load Manager</a>
+    <a id="switch" class="btn" href="#">Use a different account</a>
+
+    <div class="help">
+      <b>Seeing “Sorry, unable to open the file” or “You need access”?</b>
+      You're signed in with a different Google account.
+      <ol>
+        <li>Tap “Use a different account” and pick your @asiancollege.edu.ph email.</li>
+        <li>If it still fails, sign out of other Google accounts in this browser, or open the page in a new browser profile.</li>
+        <li>Still stuck? Ask the SHS Coordinator to confirm your school email.</li>
+      </ol>
+    </div>
+    <div class="foot">Your loading is only visible to you and the SHS Coordinator.</div>
+  </main>
+
+  <div id="appWrap" hidden>
+    <iframe id="app" title="Asian College Senior High School Load Manager" allow="fullscreen"></iframe>
+    <div id="appLoad" class="apploading">
+      <div class="orbs"><i></i><i></i><i></i></div>
+      <div class="ld">
+        <div class="ring"><img alt="" src="https://i.ibb.co/Y7gR9QbY/AC-SHS-Logo.png"></div>
+        <h2>Faculty &amp; Section Loading</h2>
+        <div class="msg" id="ldMsg">Connecting to your school account…</div>
+        <div class="track"><i id="ldBar"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const APP_URL = "https://script.google.com/a/macros/asiancollege.edu.ph/s/AKfycbwk5sy4hql54rpWRsr0XIM3Ye_hPyk7TlQntpqBcSu_-fIA9yTZ96mH3RzwQCDS6km1/exec";
+    const KEY = 'ac_ok', WAIT = 8000;
+    const $ = id => document.getElementById(id);
+    const root = document.documentElement;
+    const remember = () => { try { localStorage.setItem(KEY, '1'); } catch (e) {} };
+    const forget = () => { try { localStorage.removeItem(KEY); } catch (e) {} };
+    let started = false, auto = false, failedOnce = false, fallback = null, msgTimer, barTimer;
+  
+    const MSGS = ['Connecting to your school account…', 'Checking your access…', 'Loading your schedule…', 'Almost there…'];
+  
+    function startLoader() {
+      const msg = $('ldMsg'), bar = $('ldBar'); let i = 0, p = 8;
+      msg.textContent = MSGS[0]; msg.style.opacity = 1; bar.style.width = p + '%';
+      msgTimer = setInterval(() => {
+        i++;
+        msg.style.opacity = 0;
+        setTimeout(() => { msg.textContent = MSGS[i]; msg.style.opacity = 1; }, 180);
+        if (i >= MSGS.length - 1) clearInterval(msgTimer);
+      }, 1800);
+      barTimer = setInterval(() => { p += (90 - p) * 0.12; bar.style.width = p + '%'; }, 500);
+    }
+  
+    function finishLoader() {
+      clearInterval(msgTimer); clearInterval(barTimer);
+      const l = $('appLoad'); if (!l) return;
+      $('ldMsg').textContent = 'Welcome!'; $('ldBar').style.width = '100%';
+      setTimeout(() => { l.classList.add('out'); setTimeout(() => l.remove(), 500); }, 350);
+    }
+  
+    /* open the app inside this page; isAuto = returning visitor, skipped the card */
+    function openApp(isAuto) {
+      if (started) return;
+      started = true; auto = !!isAuto;
+      remember();
+      $('appWrap').hidden = false;
+      root.classList.add('running');
+      startLoader();
+      $('app').src = APP_URL;
+      fallback = setTimeout(failed, WAIT);
+    }
+  
+    function failed() {
+      if (!auto) return location.replace(APP_URL);   // they pressed the button: go to the real link
+      failedOnce = true; forget();                    // automatic try didn't work: show the card + notice
+      clearInterval(msgTimer); clearInterval(barTimer);
+      $('app').src = 'about:blank';
+      $('appWrap').hidden = true;
+      root.classList.remove('running', 'fast');
+      $('notice').hidden = false;
+      started = false;
+    }
+  
+    window.addEventListener('message', e => {
+      let ok = false;
+      try { ok = /\.googleusercontent\.com$/.test(new URL(e.origin).hostname); } catch (x) {}
+      if (started && ok && e.data && e.data.acLoadManager === 'ready') { clearTimeout(fallback); finishLoader(); }
+    });
+  
+    $('go').href = APP_URL;
+    $('go').addEventListener('click', e => {
+      e.preventDefault();
+      if (failedOnce) return location.href = APP_URL;   // embedding didn't work here, open directly
+      $('notice').hidden = true; openApp(false);
+    });
+    $('switch').href = "https://accounts.google.com/AccountChooser?hd=asiancollege.edu.ph&continue=" + encodeURIComponent(APP_URL);
+    $('switch').addEventListener('click', remember);
+  
+    if (root.classList.contains('fast')) openApp(true);
+  </script>
+</body>
+</html>
