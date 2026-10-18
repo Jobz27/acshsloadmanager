@@ -1,77 +1,429 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AC SHS | Teacher Access</title>
 <link rel="icon" type="image/png" href="https://i.ibb.co/Y7gR9QbY/AC-SHS-Logo.png">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#e9eaff;--card:#fff;--ink:#171b2d;--mute:#6b7390;--line:#e6e8f2;--pri:#5b5bf0;--pri2:#8b5cf6}
-  @media(prefers-color-scheme:dark){:root{--bg:#0b0d1a;--card:#171b2e;--ink:#e8eaf6;--mute:#9aa3c2;--line:#2a3048}}
+  :root{--bg:#e9eaff;--ink:#0d1226;--mute:#444d68;--line:#dfe3f3;--edge:#b9bff0;--pri:#4338ca;--pri2:#7c3aed;--soft:#e8e9ff;--bad:#b42318;--sh:0 10px 34px rgba(67,56,202,.18)}
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0}
-  body{font:15px/1.55 'Plus Jakarta Sans',system-ui,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg)}
-  #app{position:fixed;inset:0;width:100%;height:100%;border:0;display:block}
-  #load{position:fixed;inset:0;z-index:2;display:grid;place-items:center;padding:20px;
-    background:radial-gradient(800px 420px at 10% -10%,#c9c8ff88,transparent),radial-gradient(700px 400px at 100% 0,#ecd9ff88,transparent),var(--bg);
-    transition:opacity .45s ease,visibility .45s}
-  #load.out{opacity:0;visibility:hidden}
-  .ld{width:min(380px,100%);text-align:center;padding:34px 28px;border-radius:28px;background:var(--card);
-    border:1px solid var(--line);box-shadow:0 24px 70px rgba(40,40,110,.2)}
-  .ring{position:relative;width:104px;height:104px;margin:0 auto 18px;display:grid;place-items:center}
-  .ring::before{content:"";position:absolute;inset:0;border-radius:50%;
-    background:conic-gradient(from 0deg,transparent 0 50%,var(--pri),var(--pri2),transparent);
-    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));
-    mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));
-    animation:spin 1.2s linear infinite}
-  .ring img{width:80px;height:80px;border-radius:50%;object-fit:contain}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  h1{margin:0 0 4px;font-size:20px;font-weight:800;letter-spacing:-.3px}
-  p{margin:0;color:var(--mute)}
-  #slow{margin-top:18px}
-  #slow[hidden]{display:none}
-  .btn{display:block;margin-top:10px;padding:12px 16px;border-radius:14px;font-weight:700;text-decoration:none;
-    color:#fff;background:linear-gradient(120deg,var(--pri),var(--pri2))}
-  @media(prefers-reduced-motion:reduce){.ring::before{animation:none}}
+  body{margin:0;min-height:100vh;font:14px/1.5 'Plus Jakarta Sans',system-ui,Segoe UI,Roboto,sans-serif;color:var(--ink);
+    background:radial-gradient(900px 480px at 8% -10%,#cfcfff,transparent),radial-gradient(800px 460px at 100% 0,#ecd9ff,transparent),var(--bg) fixed}
+  header{display:flex;align-items:center;gap:12px;padding:12px 20px;color:#fff;background:linear-gradient(110deg,#3730a3,#6d28d9);box-shadow:0 8px 24px rgba(67,56,202,.3)}
+  header h1{margin:0;font-size:16px;font-weight:800;letter-spacing:-.2px}
+  main{max-width:1180px;margin:0 auto;padding:16px}
+  .card{background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--sh)}
+  .mute{color:var(--mute)} .small{font-size:12px}
+  button{font:inherit;font-weight:600;border:1px solid var(--edge);background:#fff;color:var(--ink);border-radius:12px;padding:8px 14px;cursor:pointer;transition:background .15s,transform .1s}
+  button:hover{background:#f4f5ff} button:active{transform:scale(.97)}
+  button.pri{background:linear-gradient(120deg,var(--pri),var(--pri2));color:#fff;border-color:transparent}
+  button.pri:hover{filter:brightness(1.07)}
+  button:disabled{opacity:.55;cursor:default}
+  button.wide{width:100%;margin-top:12px;padding:11px}
+  input,select{font:inherit;padding:10px 12px;border:1px solid var(--edge);border-radius:12px;background:#fff;color:var(--ink);width:100%}
+  input:focus,select:focus{outline:2px solid var(--pri);outline-offset:1px}
+  label{display:block;margin:10px 0 4px;font-size:12px;font-weight:700;color:var(--mute)}
+  label.chk{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink);margin:12px 0 0;cursor:pointer}
+  label.chk input{width:auto;margin:0}
+
+  .gate{max-width:420px;margin:7vh auto;text-align:center;padding:30px 24px}
+  .gate .gi{width:64px;height:64px;margin:0 auto 12px;border-radius:20px;display:grid;place-items:center;font-size:28px;background:linear-gradient(135deg,var(--pri),var(--pri2))}
+  .gate h2{margin:0 0 6px;font-size:20px;font-weight:800}
+  .gate input#code{text-align:center;font:800 22px ui-monospace,Consolas,monospace;letter-spacing:3px;text-transform:uppercase;margin-top:10px}
+  .gate label.chk{justify-content:center}
+  .err{margin-top:12px;padding:10px 12px;border-radius:12px;background:#fdecec;color:var(--bad);border:1px solid #f5b5b5;font-weight:700;font-size:13px}
+  .err[hidden]{display:none}
+
+  .ctl{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .hi{font-size:20px;font-weight:800;letter-spacing:-.4px}
+  .ctr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .ctr select{width:auto}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .tab{border-radius:99px;padding:7px 16px;background:#fff}
+  .tab small{opacity:.75;font-weight:600}
+  .tab.on{background:linear-gradient(120deg,var(--pri),var(--pri2));color:#fff;border-color:transparent}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:3px 12px 3px 4px;border:1px solid var(--line);border-radius:99px;background:#fff;font-size:12px;color:var(--mute)}
+  .chip i{font-style:normal;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;background:var(--soft)}
+  .chip b{color:var(--ink)}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .gwrap{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:#fff}
+  .grid{width:100%;min-width:640px;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:12px;text-align:center}
+  .grid th,.grid td{height:26px;padding:0 4px;overflow:hidden;line-height:1.25;border-bottom:1px solid #eef0f8;border-right:1px solid #f3f4fb}
+  .grid thead th{background:var(--soft);color:var(--pri);font-size:11px;letter-spacing:.6px;padding:7px 4px}
+  .grid td.t{background:#f7f8ff;color:#5d6786;font-size:10.5px;font-variant-numeric:tabular-nums}
+  .grid td.b1{background:#fafbff}
+  .grid td.blk{padding:2px 6px;font-weight:700;text-transform:uppercase;border:2px solid #fff;border-radius:10px}
+  .blk .sj{display:block;font-size:12.5px;font-weight:800;line-height:1.15}
+  .blk .in{display:block;font-size:10.5px;font-weight:700;opacity:.85;margin-top:2px}
+  .blk .rm{display:block;font-size:10px;font-weight:600;opacity:.7;margin-top:2px;text-transform:none}
+  .grid td.one{white-space:nowrap;text-overflow:ellipsis}
+  .grid td.one .sj,.grid td.one .in,.grid td.one .rm{display:inline;margin:0 6px 0 0}
+  .grid td.nt{background:repeating-linear-gradient(135deg,#fff3c4,#fff3c4 8px,#fff9df 8px,#fff9df 16px);color:#7a5b00;box-shadow:inset 3px 0 0 #e6b800}
+  .grid td.lunch{background:repeating-linear-gradient(135deg,#dcf0fb,#dcf0fb 8px,#eef7fd 8px,#eef7fd 16px);color:#1f5f86;box-shadow:inset 3px 0 0 #6bb6e0}
+  .grid tr.sum td{background:var(--soft);font-weight:700;font-size:12px}
+  .grid tr.sum td.lbl{text-align:left;color:var(--mute);padding-left:10px}
+  .grid tr.sum:last-child td{background:var(--pri);color:#fff}
+  .grid tr.sum:last-child td.lbl{color:#fff}
+  .legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .lg{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;padding:3px 11px;border-radius:99px}
+  .lg i{width:8px;height:8px;border-radius:50%}
+  .lg small{font-weight:600;opacity:.8}
+  .note{margin-top:10px;font-size:12px;color:var(--mute)}
+  .empty{padding:30px;text-align:center;color:var(--mute);font-weight:600}
+
+  dialog{border:none;border-radius:22px;padding:22px;width:min(420px,92vw);box-shadow:0 30px 80px rgba(23,27,45,.32)}
+  dialog::backdrop{background:rgba(23,27,45,.45)}
+  dialog h2{margin:0 0 6px;font-size:18px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap}
+  #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#171b2d;color:#fff;padding:11px 18px;border-radius:14px;max-width:90%;z-index:99;display:none;margin:0;border:0;box-shadow:0 14px 36px rgba(0,0,0,.28)}
+  #toast.bad{background:var(--bad)}
+
+  #printHead{display:none}
+  @media(max-width:600px){main{padding:10px}.hi{font-size:17px}.two{grid-template-columns:1fr}}
+  @media print{
+    @page{margin:10mm}
+    body{background:#fff!important}
+    header,.ctl,.tabs,.btns,.note,dialog,#toast{display:none!important}
+    #printHead{display:block;text-align:center;margin-bottom:4mm;font-size:11px}
+    main{padding:0;max-width:none}
+    .card{box-shadow:none;border:0;padding:0;background:#fff}
+    .gwrap{border:0;overflow:visible}
+    .grid{min-width:0;font-size:9px}
+    .grid td,.grid th{height:5mm}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
 </style>
+<script>
+  /* shows any script error on the page itself, so a blank screen can never hide it */
+  window.onerror = function (msg, src, line, col) {
+    var d = document.createElement('pre');
+    d.style.cssText = 'margin:0;padding:12px;background:#fdecec;color:#b42318;white-space:pre-wrap;font:13px monospace';
+    d.textContent = 'Script error: ' + msg + ' (line ' + line + ', col ' + col + ')';
+    var host = document.body || document.documentElement;
+    host.insertBefore(d, host.firstChild);
+  };
+</script>
 </head>
 <body>
-  <iframe id="app" title="Asian College Senior High School Teacher Access" allow="fullscreen"></iframe>
+<header><h1>Asian College SHS &middot; Teacher Access</h1></header>
+<main id="app"></main>
 
-  <div id="load">
-    <div class="ld">
-      <div class="ring"><img alt="" src="https://i.ibb.co/Y7gR9QbY/AC-SHS-Logo.png"></div>
-      <h1>Teacher Access</h1>
-      <p>Opening your loading…</p>
-      <div id="slow" hidden>
-        <p>This is taking longer than usual.</p>
-        <a id="direct" class="btn" href="#">Open it directly</a>
-      </div>
-    </div>
+<dialog id="icsDlg">
+  <h2>Add to my calendar</h2>
+  <div class="mute" id="icsWho"></div>
+  <div class="two">
+    <div><label>First day</label><input type="date" id="iStart"></div>
+    <div><label>Last day</label><input type="date" id="iEnd"></div>
   </div>
+  <label class="chk"><input type="checkbox" id="iNT" checked> Include non-teaching blocks</label>
+  <label class="chk"><input type="checkbox" id="iLu"> Include lunch breaks</label>
+  <p class="mute small">Each class repeats weekly between the two dates. Open the downloaded file to add it to Google Calendar, Apple Calendar or Outlook. If nothing downloads, use <b>Copy text</b> and save it as a file ending in <b>.ics</b>.</p>
+  <div class="acts"><button id="icsX">Cancel</button><button id="icsC">Copy text</button><button class="pri" id="icsD">Download .ics</button></div>
+</dialog>
+<div id="toast"></div>
+<div id="printHead"></div>
 
 <script>
-  const TEACHER_URL = "https://script.google.com/macros/s/AKfycbyNN2wYvaQVhQWLX1g-111p99wAu3VwQlshMjyWf4Cg1Q_0LWCc3R7DiVxTnX6eZs_N/exec?page=teacher";
-  const $ = id => document.getElementById(id);
-  let done = false;
-  const slowTimer = setTimeout(() => { if (!done) $('slow').hidden = false; }, 12000);
+  const DAYS = [['M','Mon','MONDAY'],['T','Tue','TUESDAY'],['W','Wed','WEDNESDAY'],['H','Thu','THURSDAY'],['F','Fri','FRIDAY']];
 
-  function ready() {
-    if (done) return;
-    done = true; clearTimeout(slowTimer);
-    $('load').classList.add('out');
-    setTimeout(() => $('load').remove(), 500);
+  /* special characters are written as escape codes so nothing invisible can sneak into this file */
+  const CR = String.fromCharCode(13), LF = String.fromCharCode(10), BS = String.fromCharCode(92), CRLF = CR + LF;
+  const E = {
+    key: '\uD83D\uDD11', print: '\uD83D\uDDA8\uFE0F', cal: '\uD83D\uDDD3\uFE0F', me: '\uD83D\uDC64',
+    cap: '\uD83C\uDF93', school: '\uD83C\uDFEB', books: '\uD83D\uDCDA', pencil: '\u270F\uFE0F',
+    files: '\uD83D\uDDC2\uFE0F', timer: '\u23F1\uFE0F', door: '\uD83D\uDEAA',
+    teachers: '\uD83D\uDC69\u200D\uD83C\uDFEB', wave: '\uD83D\uDC4B',
+    refresh: '\u21BB', dot: '\u00B7', ell: '\u2026', en: '\u2013'
+  };
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const pad = n => String(n).padStart(2, '0');
+  const toMin = s => { const p = String(s).split(':'); return +p[0] * 60 + (+p[1] || 0); };
+  const fmt = m => (Math.floor(m / 60) % 12 || 12) + ':' + pad(m % 60);
+  const fmtAP = m => fmt(m) + (m < 720 ? ' AM' : ' PM');
+  const dayIdx = s => [...new Set([...String(s).replace(/Th/gi, 'H').toUpperCase()].map(c => DAYS.findIndex(d => d[0] === c)).filter(i => i >= 0))];
+  const hrs = l => (toMin(l.End) - toMin(l.Start)) / 60;
+  const n2 = x => Number(x.toFixed(2));
+  const isLunch = l => l.Type === 'Lunch' || String(l.Subject).trim().toUpperCase() === 'LUNCH';
+  const normCode = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  /* The page talks to Apps Script as plain JSON. No cookies are sent, so Google never has to pick
+     an account, and teachers who are signed in to several Google accounts are not affected. */
+  const API_URL = 'https://script.google.com/macros/s/AKfycbyNN2wYvaQVhQWLX1g-111p99wAu3VwQlshMjyWf4Cg1Q_0LWCc3R7DiVxTnX6eZs_N/exec';
+  async function api(code, term) {
+    let res;
+    try {
+      res = await fetch(API_URL, {method: 'POST', credentials: 'omit', body: JSON.stringify({action: 'teacher', code: code, term: term || ''})});
+    } catch (e1) {
+      try {
+        res = await fetch(API_URL + '?action=teacher&code=' + encodeURIComponent(code) + '&term=' + encodeURIComponent(term || ''), {credentials: 'omit'});
+      } catch (e2) { throw new Error('Could not reach the server. Check your internet connection and try again.'); }
+    }
+    try { return await res.json(); }
+    catch (e3) { throw new Error('The server sent an unexpected reply. Please try again in a moment.'); }
   }
 
-  window.addEventListener('message', e => {
-    let ok = false;
-    try { ok = /\.googleusercontent\.com$/.test(new URL(e.origin).hostname); } catch (x) {}
-    if (ok && e.data && e.data.acLoadManager === 'ready') ready();
-  });
+  function toast(msg, bad) {
+    const t = $('toast'); t.textContent = msg; t.className = bad ? 'bad' : '';
+    t.popover = 'manual';
+    try { t.hidePopover(); } catch (e) {}
+    try { t.showPopover(); } catch (e) {}
+    t.style.display = 'block'; clearTimeout(toast.t);
+    toast.t = setTimeout(() => { t.style.display = 'none'; try { t.hidePopover(); } catch (e) {} }, 5000);
+  }
 
-  $('direct').href = TEACHER_URL;
-  $('app').src = TEACHER_URL;
+  /* same pastel colour per subject as the main app */
+  const HUES = [350, 15, 35, 50, 90, 140, 165, 185, 205, 225, 250, 275, 300, 325];
+  function subjHue(subj) {
+    const k = String(subj).trim().toUpperCase(); let h = 5381;
+    for (let i = 0; i < k.length; i++) h = ((h << 5) + h + k.charCodeAt(i)) >>> 0;
+    return HUES[h % HUES.length] + (h >> 8) % 11 - 5;
+  }
+  const subjCol = s => { const h = subjHue(s); return {bg: 'hsl(' + h + ' 78% 89%)', bar: 'hsl(' + h + ' 55% 62%)', ink: 'hsl(' + h + ' 45% 22%)'}; };
+
+  const SUF = new Set(['JR','SR','II','III','IV','V','PHD','EDD','DBA','MA','MAED','MS','MD','LPT','RGC','RPM']);
+  const PRE = new Set(['DE','DEL','DELA','DELAS','DELOS','DI','DA','LA','LE','SAN','SANTA','VAN','VON','PALO']);
+  function lastName(name) {
+    const w = String(name || '').trim().split(',').join(' ').split(/\s+/).filter(Boolean);
+    while (w.length > 1 && SUF.has(w[w.length - 1].split('.').join('').toUpperCase())) w.pop();
+    let i = w.length - 1;
+    while (i > 0 && PRE.has(w[i - 1].split('.').join('').toUpperCase())) i--;
+    return w.slice(i).join(' ');
+  }
+  const shortP = id => { const p = D && D.people[id]; return p ? ((p.Title ? p.Title + ' ' : '') + lastName(p.Name)).toUpperCase() : ''; };
+
+  let D = null, CODE = '', TAB = 'me', TERM = '', REMEMBER = true;
+
+  /* ---------- sign in ---------- */
+  function showGate(msg) {
+    D = null;
+    $('app').innerHTML = '<div class="card gate"><div class="gi">' + E.key + '</div><h2>Teacher access</h2>'
+      + '<p class="mute">Type the access code from your SHS Coordinator to see your loading and your advisory classes. No school login needed.</p>'
+      + '<input id="code" placeholder="XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="9">'
+      + '<label class="chk"><input type="checkbox" id="rem" checked> Remember me on this device</label>'
+      + '<div id="gerr" class="err"' + (msg ? '' : ' hidden') + '>' + esc(msg || '') + '</div>'
+      + '<button class="pri wide" id="go">Open my loading</button></div>';
+    const inp = $('code');
+    inp.oninput = () => { const v = normCode(inp.value).slice(0, 8); inp.value = v.length > 4 ? v.slice(0, 4) + '-' + v.slice(4) : v; $('gerr').hidden = true; };
+    inp.onkeydown = e => { if (e.key === 'Enter') $('go').click(); };
+    $('go').onclick = async () => {
+      const c = normCode(inp.value);
+      if (c.length < 8) { $('gerr').textContent = 'Please type your 8-character code.'; $('gerr').hidden = false; return; }
+      REMEMBER = $('rem').checked;
+      $('go').disabled = true; $('go').textContent = 'Checking' + E.ell;
+      await signIn(c, '', {});
+    };
+    inp.focus();
+  }
+
+  async function signIn(code, term, opts) {
+    try {
+      const r = await api(code, term);
+      if (!r.ok) {
+        if (opts.stored) { try { localStorage.removeItem('tc-code'); } catch (e) {} }
+        showGate(r.error); return false;
+      }
+      CODE = code; D = r; TERM = r.term;
+      try {
+        if (REMEMBER) localStorage.setItem('tc-code', code); else localStorage.removeItem('tc-code');
+        localStorage.setItem('tc-term', TERM);
+      } catch (e) {}
+      if (TAB !== 'me' && !D.sections.some(s => s.key === TAB)) TAB = 'me';
+      render(); return true;
+    } catch (e) { showGate(e.message || String(e)); return false; }
+  }
+
+  function signOut() {
+    try { localStorage.removeItem('tc-code'); } catch (e) {}
+    CODE = ''; TAB = 'me'; showGate();
+  }
+
+  /* ---------- timetable ---------- */
+  function current() {
+    if (TAB !== 'me') { const s = D.sections.find(x => x.key === TAB); if (s) return {kind: 'sec', name: s.name, loads: s.loads, sec: s}; }
+    return {kind: 'me', name: D.me.Name, loads: D.loads};
+  }
+
+  function gridHtml(loads, tD, nD, isMe) {
+    const S = toMin(D.config.dayStart), E2 = toMin(D.config.dayEnd), n = (E2 - S) / 30;
+    const starts = DAYS.map(() => ({})), cov = DAYS.map(() => ({}));
+    loads.forEach(l => {
+      const a = (toMin(l.Start) - S) / 30, b = (toMin(l.End) - S) / 30;
+      if (a < 0 || b > n || b <= a) return;
+      dayIdx(l.Days).forEach(di => { starts[di][a] = {l: l, span: b - a}; for (let k = a + 1; k < b; k++) cov[di][k] = 1; });
+    });
+    let h = '<table class="grid"><colgroup><col style="width:52px"><col style="width:52px"><col span="5"></colgroup>'
+      + '<thead><tr><th colspan="2">TIME</th><th colspan="5">DAYS</th></tr><tr><th>FROM</th><th>TO</th>'
+      + DAYS.map(d => '<th>' + d[2] + '</th>').join('') + '</tr></thead><tbody>';
+    for (let i = 0; i < n; i++) {
+      const t = S + i * 30, band = Math.floor(i / 3) % 2 ? 'b1' : '';
+      h += '<tr><td class="t">' + fmt(t) + '</td><td class="t">' + fmt(t + 30) + '</td>';
+      DAYS.forEach((d, di) => {
+        if (cov[di][i]) return;
+        const s = starts[di][i];
+        if (!s) { h += '<td class="' + band + '"></td>'; return; }
+        const l = s.l, lunch = isLunch(l), cl = l.Type === 'Class' && !lunch;
+        const kind = lunch ? 'lunch' : cl ? 'cls' : 'nt';
+        const who = isMe ? esc(l.Section) : esc(l.FacultyID ? shortP(l.FacultyID) : '');
+        const rm = esc(l.Room || '');
+        const body = s.span === 1
+          ? '<span class="sj">' + esc(l.Subject) + '</span>' + (who ? '<span class="in">' + who + '</span>' : '') + (rm ? '<span class="rm">' + rm + '</span>' : '')
+          : '<div class="sj">' + esc(l.Subject) + '</div>' + (who ? '<div class="in">' + who + '</div>' : '') + (rm ? '<div class="rm">' + rm + '</div>' : '');
+        let style = '';
+        if (cl) { const k = subjCol(l.Subject); style = ' style="background:' + k.bg + ';color:' + k.ink + ';box-shadow:inset 4px 0 0 ' + k.bar + '"'; }
+        const tip = [l.Subject, who, l.Room, l.Days + ' ' + fmtAP(toMin(l.Start)) + E.en + fmtAP(toMin(l.End))].filter(Boolean).join(' ' + E.dot + ' ');
+        h += '<td rowspan="' + s.span + '" class="blk ' + kind + (s.span === 1 ? ' one' : '') + '"' + style + ' title="' + esc(tip) + '">' + body + '</td>';
+      });
+      h += '</tr>';
+    }
+    const sum = (label, arr) => '<tr class="sum"><td colspan="2" class="lbl">' + label + '</td>' + arr.map(v => '<td>' + n2(v) + '</td>').join('') + '</tr>';
+    return h + (isMe ? sum('Non-Teaching', nD) + sum('Teaching', tD) + sum('Total', tD.map((v, i) => v + nD[i])) : sum('Total', tD)) + '</tbody></table>';
+  }
+
+  const chip = (ico, label, val) => '<span class="chip"><i>' + ico + '</i>' + (label ? label + ' ' : '') + '<b>' + val + '</b></span>';
+
+  function sheetHtml() {
+    const cur = current(), loads = cur.loads, isMe = cur.kind === 'me';
+    const tD = [0, 0, 0, 0, 0], nD = [0, 0, 0, 0, 0];
+    loads.forEach(l => dayIdx(l.Days).forEach(di => { if (l.Type === 'Class') tD[di] += hrs(l); else if (!isLunch(l)) nD[di] += hrs(l); }));
+    const T = tD.reduce((a, b) => a + b, 0), N = nD.reduce((a, b) => a + b, 0);
+    const cls = loads.filter(l => l.Type === 'Class');
+    const subs = [...new Set(cls.map(l => String(l.Subject).trim().toUpperCase()))].sort();
+    let chips;
+    if (isMe) {
+      const m = D.me;
+      chips = chip(E.school, '', esc(m.Department || 'Senior High') + ' ' + E.dot + ' ' + esc(m.Status || ''))
+        + chip(E.books, 'Preps', subs.length) + chip(E.pencil, 'Teaching', n2(T) + ' hrs') + chip(E.files, 'Non-teaching', n2(N) + ' hrs')
+        + chip(E.timer, 'Total', n2(T + N) + (Number(m.MaxUnits) ? ' / ' + m.MaxUnits : '') + ' hrs');
+    } else {
+      const s = cur.sec, teachers = new Set(cls.map(l => l.FacultyID).filter(Boolean)).size;
+      chips = (s.adviser ? chip(E.cap, 'Adviser', esc(s.adviser)) : '') + (s.room ? chip(E.door, 'Home room', esc(s.room)) : '')
+        + chip(E.books, 'Subjects', subs.length) + chip(E.teachers, 'Teachers', teachers) + chip(E.timer, 'Total', n2(T) + ' hrs/week');
+    }
+    const legend = subs.length ? '<div class="legend">' + subs.map(sub => {
+      const c = subjCol(sub);
+      const who = isMe ? '' : [...new Set(cls.filter(l => String(l.Subject).trim().toUpperCase() === sub).map(l => shortP(l.FacultyID)).filter(Boolean))].join(', ');
+      return '<span class="lg" style="background:' + c.bg + ';color:' + c.ink + '"><i style="background:' + c.bar + '"></i>' + esc(sub)
+        + (who ? ' <small>' + E.dot + ' ' + esc(who) + '</small>' : '') + '</span>';
+    }).join('') + '</div>' : '';
+    const body = loads.length ? '<div class="gwrap">' + gridHtml(loads, tD, nD, isMe) + '</div>' + legend
+      : '<div class="empty">Nothing is scheduled yet for ' + esc(TERM) + '.</div>';
+    return '<div class="chips">' + chips + '</div>'
+      + '<div class="btns"><button onclick="doPrint()">' + E.print + ' Print</button><button onclick="openIcs()">' + E.cal + ' Add to calendar</button></div>'
+      + body + '<div class="note">Read-only view. If something looks wrong, tell the SHS Coordinator.</div>';
+  }
+
+  function render() {
+    const m = D.me;
+    const tabs = '<button class="tab' + (TAB === 'me' ? ' on' : '') + '" data-k="me">' + E.me + ' My loading</button>'
+      + D.sections.map(s => '<button class="tab' + (TAB === s.key ? ' on' : '') + '" data-k="' + esc(s.key) + '">' + E.cap + ' ' + esc(s.name) + ' <small>advisory</small></button>').join('');
+    $('app').innerHTML =
+      '<div class="ctl"><div><div class="hi">Hello, ' + esc(m.Title ? m.Title + ' ' : '') + esc(lastName(m.Name)) + ' ' + E.wave + '</div><div class="mute">' + esc(m.Name) + '</div></div>'
+      + '<div class="ctr"><select id="term" aria-label="Term">' + D.terms.map(t => '<option' + (t === TERM ? ' selected' : '') + '>' + esc(t) + '</option>').join('') + '</select>'
+      + '<button id="rf">' + E.refresh + ' Refresh</button><button id="so">Sign out</button></div></div>'
+      + '<div class="tabs">' + tabs + '</div>'
+      + '<section class="card" id="sheetCard">' + sheetHtml() + '</section>';
+    $('term').onchange = () => signIn(CODE, $('term').value, {});
+    $('rf').onclick = async () => { $('rf').disabled = true; await signIn(CODE, TERM, {}); toast('Up to date'); };
+    $('so').onclick = signOut;
+    document.querySelectorAll('.tab').forEach(b => { b.onclick = () => { TAB = b.dataset.k; render(); }; });
+  }
+
+  /* ---------- print ---------- */
+  function doPrint() {
+    const cur = current(), sy = D.print && D.print.sy;
+    $('printHead').innerHTML = '<div style="font-size:16px;font-weight:800;letter-spacing:.5px">ASIAN COLLEGE</div><div>DUMAGUETE ' + E.dot + ' SHS DEPARTMENT</div>'
+      + '<div style="font-weight:800">' + esc(TERM) + (sy ? ', S.Y. ' + esc(sy) : '') + '</div>'
+      + '<div style="margin-top:2mm;font-weight:800">' + (cur.kind === 'me' ? 'FACULTY' : 'SECTION') + ': ' + esc(cur.name.toUpperCase()) + '</div>';
+    setTimeout(() => window.print(), 80);
+  }
+  window.onafterprint = () => { $('printHead').innerHTML = ''; };
+
+  /* ---------- calendar (.ics) ---------- */
+  function openIcs() {
+    const cur = current();
+    if (!cur.loads.length) return toast('Nothing to export yet', true);
+    $('icsWho').textContent = cur.name + ' ' + E.dot + ' ' + TERM;
+    const p = D.print || {};
+    $('iStart').value = p.start || ''; $('iEnd').value = p.end || '';
+    $('icsDlg').showModal();
+  }
+
+  function buildIcs() {
+    const cur = current(), a = $('iStart').value, b = $('iEnd').value;
+    if (!a || !b) { toast('Pick the first and last day', true); return null; }
+    const pd = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s); return new Date(+m[1], +m[2] - 1, +m[3]); };
+    const d1 = pd(a), d2 = pd(b);
+    if (d2 < d1) { toast('The last day must be after the first day', true); return null; }
+    if ((d2 - d1) / 864e5 > 400) { toast('Keep the date range under about a year', true); return null; }
+    const ymd = d => d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate());
+    const hm = s => pad(Math.floor(toMin(s) / 60)) + pad(toMin(s) % 60) + '00';
+    const tx = s => String(s || '').split(BS).join(BS + BS).split(';').join(BS + ';').split(',').join(BS + ',').split(CR).join('').split(LF).join(BS + 'n');
+    const fold = line => { let o = '', s = line; while (s.length > 74) { o += s.slice(0, 74) + CRLF + ' '; s = s.slice(74); } return o + s; };
+    const BYDAY = ['MO', 'TU', 'WE', 'TH', 'FR'];
+    const now = new Date(), stamp = now.getUTCFullYear() + pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) + 'T' + pad(now.getUTCHours()) + pad(now.getUTCMinutes()) + pad(now.getUTCSeconds()) + 'Z';
+    const until = ymd(d2) + 'T155959Z';
+    const out = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//AC SHS Load Manager//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+      'X-WR-CALNAME:' + tx(cur.name + ' ' + E.dot + ' ' + TERM), 'X-WR-TIMEZONE:Asia/Manila',
+      'BEGIN:VTIMEZONE', 'TZID:Asia/Manila', 'BEGIN:STANDARD', 'DTSTART:19700101T000000', 'TZOFFSETFROM:+0800', 'TZOFFSETTO:+0800', 'TZNAME:PST', 'END:STANDARD', 'END:VTIMEZONE'];
+    let n = 0;
+    cur.loads.forEach(l => {
+      const lunch = isLunch(l);
+      if (lunch && !$('iLu').checked) return;
+      if (!lunch && l.Type !== 'Class' && !$('iNT').checked) return;
+      const di = dayIdx(l.Days); if (!di.length) return;
+      let first = null;
+      for (let k = 0; k < 7 && !first; k++) {
+        const d = new Date(d1.getFullYear(), d1.getMonth(), d1.getDate() + k);
+        if (di.includes(d.getDay() - 1)) first = d;
+      }
+      if (!first || first > d2) return;
+      const who = l.FacultyID && D.people[l.FacultyID] ? D.people[l.FacultyID].Name : '';
+      const title = [l.Subject, l.Section].filter(Boolean).join(' ' + E.dot + ' ');
+      const desc = [cur.kind !== 'me' && who ? who : '', TERM, l.Days + ' ' + fmtAP(toMin(l.Start)) + ' ' + E.en + ' ' + fmtAP(toMin(l.End))].filter(Boolean).join(LF);
+      out.push('BEGIN:VEVENT', 'UID:' + l.ID + '@acshs-loadmanager', 'DTSTAMP:' + stamp,
+        'DTSTART;TZID=Asia/Manila:' + ymd(first) + 'T' + hm(l.Start), 'DTEND;TZID=Asia/Manila:' + ymd(first) + 'T' + hm(l.End),
+        'RRULE:FREQ=WEEKLY;BYDAY=' + di.slice().sort((x, y) => x - y).map(i => BYDAY[i]).join(',') + ';UNTIL=' + until,
+        'SUMMARY:' + tx(title || l.Subject), l.Room ? 'LOCATION:' + tx(l.Room) : '', 'DESCRIPTION:' + tx(desc), 'END:VEVENT');
+      n++;
+    });
+    if (!n) { toast('Nothing to export with these options', true); return null; }
+    out.push('END:VCALENDAR');
+    return {text: out.filter(Boolean).map(fold).join(CRLF) + CRLF, name: (cur.name + ' - ' + TERM).replace(/[^\w .\-]+/g, '') + '.ics'};
+  }
+
+  $('icsX').onclick = () => $('icsDlg').close();
+  $('icsD').onclick = () => {
+    const r = buildIcs(); if (!r) return;
+    try {
+      const blob = new Blob([r.text], {type: 'text/calendar;charset=utf-8'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = r.name;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      $('icsDlg').close(); toast('Calendar file downloaded');
+    } catch (e) { toast('Could not download. Use Copy text instead.', true); }
+  };
+  $('icsC').onclick = () => {
+    const r = buildIcs(); if (!r) return;
+    const t = document.createElement('textarea'); t.value = r.text; t.style.cssText = 'position:fixed;opacity:0';
+    $('icsDlg').appendChild(t); t.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+    t.remove();
+    toast(ok ? 'Copied. Paste into a text file and save it as ' + r.name : 'Could not copy. Try Download instead.', !ok);
+  };
+
+  /* ---------- start ---------- */
+  (function () {
+    let c = '', t = '';
+    try { c = localStorage.getItem('tc-code') || ''; t = localStorage.getItem('tc-term') || ''; } catch (e) {}
+    if (c) { $('app').innerHTML = '<div class="card gate"><p class="mute">Opening your loading' + E.ell + '</p></div>'; REMEMBER = true; signIn(c, t, {stored: true}); }
+    else showGate();
+  })();
 </script>
 </body>
 </html>
