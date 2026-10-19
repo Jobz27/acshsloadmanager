@@ -1697,6 +1697,41 @@
         animation: none !important
       }
     }
+
+    /* ===== scale by screen width AND height (the smaller one wins) ===== */
+  :root{--kw:1;--kh:1}
+  @media screen and (min-width:1600px){:root{--kw:1.12}}
+  @media screen and (min-width:1920px){:root{--kw:1.28}}
+  @media screen and (min-width:2400px){:root{--kw:1.55}}
+  @media screen and (min-width:3200px){:root{--kw:2}}
+  @media screen and (min-height:760px){:root{--kh:1.05}}
+  @media screen and (min-height:880px){:root{--kh:1.12}}
+  @media screen and (min-height:960px){:root{--kh:1.2}}
+  @media screen and (min-height:1100px){:root{--kh:1.32}}
+  @media screen and (min-height:1250px){:root{--kh:1.5}}
+  @media screen and (min-height:1500px){:root{--kh:1.75}}
+  @media screen and (min-height:1800px){:root{--kh:2}}
+  :root{--k:min(var(--kw),var(--kh))}
+
+  /* ===== chips + buttons share one row on wide screens ===== */
+  .top{display:flex;flex-direction:column}
+  @media screen and (min-width:901px){
+    .top{flex-direction:row;align-items:flex-start;justify-content:space-between;gap:calc(12px*var(--k))}
+    .top .chips{flex:1 1 auto;min-width:0}
+    .top .btns{flex:none;flex-wrap:nowrap}
+  }
+
+  /* ===== full view: text follows --tt, which the script lowers until everything fits ===== */
+  @media screen and (min-width:901px) and (min-height:700px){
+    body.in #sheetCard .top{flex:none}
+    body.in #sheetCard .top .chips{flex:1 1 0;min-width:0}
+    body.in .grid td.blk{padding:calc(2px*var(--tt,1)) calc(6px*var(--tt,1))}
+    body.in .blk .sj{font-size:calc(13px*var(--k)*var(--tt,1))}
+    body.in .blk .in{font-size:calc(11px*var(--k)*var(--tt,1));margin-top:calc(3px*var(--tt,1))}
+    body.in .blk .rm{font-size:calc(10.5px*var(--k)*var(--tt,1));margin-top:calc(3px*var(--tt,1))}
+    body.in .grid td.one .sj{font-size:calc(12px*var(--k)*var(--tt,1))}
+    body.in .grid td.one .in,body.in .grid td.one .rm{font-size:calc(11.5px*var(--k)*var(--tt,1))}
+    body.in .grid td.t{font-size:calc(10.5px*var(--k)*var(--tt
   </style>
   <script>
     /* shows any script error on the page itself, so a blank screen can never hide it */
@@ -1986,9 +2021,9 @@ async function signIn(code, term, opts) {
     }).join('') + '</div>' : '';
     const body = loads.length ? '<div class="gwrap">' + gridHtml(loads, tD, nD, isMe) + '</div>' + legend
       : '<div class="empty">Nothing is scheduled yet for ' + esc(TERM) + '.</div>';
-    return '<div class="chips">' + chips + '</div>'
-      + '<div class="btns"><button onclick="doPrint()">' + E.print + ' Print</button><button onclick="openIcs()">' + E.cal + ' Add to calendar</button></div>'
-      + body + '<div class="note">Read-only view. If something looks wrong, tell the SHS Coordinator.</div>';
+    return '<div class="top"><div class="chips">' + chips + '</div>'
+      + '<div class="btns"><button onclick="doPrint()">' + E.print + ' Print</button><button onclick="openIcs()">' + E.cal + ' Add to calendar</button></div></div>'
+      + body + '<div class="note">Read-only view. If something looks wrong, tell the Principal or Assistant Principal.</div>';
   }
 
   function render() {
@@ -2006,7 +2041,7 @@ async function signIn(code, term, opts) {
     $('rf').onclick = async () => { showLoading('Refreshing' + E.ell); const ok = await signIn(CODE, TERM, {keep: true}); if (ok) toast('Up to date'); };
     $('so').onclick = signOut;
     document.querySelectorAll('.tab').forEach(b => { b.onclick = () => { TAB = b.dataset.k; render(); }; });
-    wireSheet();
+    wireSheet(); fitSheet(); watchFit();
   }
 
 /* ---------- hover highlight + legend spotlight ---------- */
@@ -2150,6 +2185,34 @@ function showLoading(msg) {
     t.remove();
     toast(ok ? 'Copied. Paste into a text file and save it as ' + r.name : 'Could not copy. Try Download instead.', !ok);
   };
+
+  /* ---------- fit the timetable to the window ---------- */
+  const FULL_MQ = '(min-width:901px) and (min-height:700px)';
+  let RO = null, roT;
+
+  function fitSheet() {
+    const card = $('sheetCard'); if (!card) return;
+    card.style.removeProperty('--tt');
+    if (!matchMedia(FULL_MQ).matches) return;          // small screens scroll normally
+    const wrap = card.querySelector('.gwrap'), tbl = wrap && wrap.querySelector('.grid');
+    if (!tbl) return;
+    let s = 1;
+    for (let i = 0; i < 16; i++) {
+      card.style.setProperty('--tt', s);
+      if (tbl.offsetHeight <= wrap.clientHeight + 1) break;   // everything fits, totals included
+      s = Math.max(.35, +(s - .05).toFixed(2));
+    }
+  }
+
+  function watchFit() {
+    const w = document.querySelector('#sheetCard .gwrap');
+    if (RO) { RO.disconnect(); RO = null; }
+    if (!w || !window.ResizeObserver) return;
+    RO = new ResizeObserver(() => { clearTimeout(roT); roT = setTimeout(fitSheet, 60); });
+    RO.observe(w);
+  }
+  addEventListener('resize', () => { clearTimeout(roT); roT = setTimeout(fitSheet, 120); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitSheet);
 
   /* ---------- start ---------- */
   (function () {
