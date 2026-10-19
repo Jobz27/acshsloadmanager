@@ -1729,7 +1729,8 @@
     <label class="chk"><input type="checkbox" id="iLu"> Include lunch breaks</label>
     <p class="mute small">Each class repeats weekly between the two dates. Open the downloaded file to add it to Google
       Calendar, Apple Calendar or Outlook. If nothing downloads, use <b>Copy text</b> and save it as a file ending in
-      <b>.ics</b>.</p>
+      <b>.ics</b>.
+    </p>
     <div class="acts">
       <button id="icsX">Cancel</button><button id="icsC">Copy text</button><button class="pri" id="icsD">Download .ics</button>
     </div>
@@ -1906,21 +1907,7 @@ async function signIn(code, term, opts) {
     if (opts.keep) { render(); toast(e.message || String(e), true); return false; }
     showGate(e.message || String(e)); return false;
   }
-}    try {
-      const r = await api(code, term);
-      if (!r.ok) {
-        if (opts.stored) { try { localStorage.removeItem('tc-code'); } catch (e) {} }
-        showGate(r.error); return false;
-      }
-      CODE = code; D = r; TERM = r.term;
-      try {
-        if (REMEMBER) localStorage.setItem('tc-code', code); else localStorage.removeItem('tc-code');
-        localStorage.setItem('tc-term', TERM);
-      } catch (e) {}
-      if (TAB !== 'me' && !D.sections.some(s => s.key === TAB)) TAB = 'me';
-      render(); return true;
-    } catch (e) { showGate(e.message || String(e)); return false; }
-  }
+}   
 
   function signOut() {
     try { localStorage.removeItem('tc-code'); } catch (e) {}
