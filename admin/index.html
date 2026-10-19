@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <title>AC SHS | Load Manager</title>
-<script>try{if(localStorage.getItem('ac_ok')==='1'&&location.search.indexOf('switch')<0)document.documentElement.classList.add('fast')}catch(e){}</script>
-<link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1GMU8Qx-GqOM3ZLO9wwj6WhXXNq0r9oEz">
+<script>try{if(location.search.indexOf('switch')<0)document.documentElement.classList.add('fast')}catch(e){}</script><link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1GMU8Qx-GqOM3ZLO9wwj6WhXXNq0r9oEz">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{--bg:#e9eaff;--card:#fff;--ink:#171b2d;--mute:#6b7390;--line:#e6e8f2;--pri:#5b5bf0;--pri2:#8b5cf6;--soft:#eef0ff;--warn:#fff7e0;--warnb:#f3d98a}
@@ -53,7 +52,7 @@
     background:color-mix(in srgb,var(--card) 82%,transparent);backdrop-filter:blur(14px);
     border:1px solid var(--line);box-shadow:0 24px 70px rgba(40,40,110,.25)}
   .ld h2{margin:0 0 6px;font-size:17px;font-weight:800;letter-spacing:-.3px;color:var(--ink)}
-  .ld .g{min-height:20px;font-size:13.5px;font-weight:600;color:var(--mute);transition:opacity .18s}
+  .ld .msg{min-height:20px;font-size:13.5px;font-weight:600;color:var(--mute);transition:opacity .18s}
   
   .ring{position:relative;width:96px;height:96px;margin:0 auto 16px;display:grid;place-items:center}
   .ring::before{content:"";position:absolute;inset:0;border-radius:50%;
@@ -91,7 +90,7 @@
   /* bigger card */
   .ld{width:min(440px,90vw);padding:40px 36px 34px;border-radius:30px}
   .ld h2{font-size:22px;margin-bottom:8px}
-  .ld .g{font-size:15px;min-height:22px}
+  .ld .msg{font-size:15px;min-height:22px}
   
   /* bigger logo ring */
   .ring{width:132px;height:132px;margin-bottom:22px}
@@ -149,75 +148,60 @@
     </div>
   </div>
 
-  <script>
-    const APP_URL = "https://script.google.com/a/macros/asiancollege.edu.ph/s/AKfycbwk5sy4hql54rpWRsr0XIM3Ye_hPyk7TlQntpqBcSu_-fIA9yTZ96mH3RzwQCDS6km1/exec";
-    const KEY = 'ac_ok', WAIT = 3000;
-    const $ = id => document.getElementById(id);
-    const root = document.documentElement;
-    const remember = () => { try { localStorage.setItem(KEY, '1'); } catch (e) {} };
-    const forget = () => { try { localStorage.removeItem(KEY); } catch (e) {} };
-    let started = false, auto = false, failedOnce = false, fallback = null, msgTimer, barTimer;
-  
-    const MSGS = ['Connecting to your school account…', 'Checking your access…', 'Loading your schedule…', 'Almost there…'];
-  
-    function startLoader() {
-      const msg = $('ldMsg'), bar = $('ldBar'); let i = 0, p = 8;
-      msg.textContent = MSGS[0]; msg.style.opacity = 1; bar.style.width = p + '%';
-      msgTimer = setInterval(() => {
-        i++;
-        msg.style.opacity = 0;
-        setTimeout(() => { msg.textContent = MSGS[i]; msg.style.opacity = 1; }, 180);
-        if (i >= MSGS.length - 1) clearInterval(msgTimer);
-      }, 1800);
-      barTimer = setInterval(() => { p += (90 - p) * 0.12; bar.style.width = p + '%'; }, 500);
-    }
-  
-    function finishLoader() {
-      clearInterval(msgTimer); clearInterval(barTimer);
-      const l = $('appLoad'); if (!l) return;
-      $('ldMsg').textContent = 'Welcome!'; $('ldBar').style.width = '100%';
-      setTimeout(() => { l.classList.add('out'); setTimeout(() => l.remove(), 500); }, 350);
-    }
-  
-    /* open the app inside this page; isAuto = returning visitor, skipped the card */
-    function openApp(isAuto) {
-      if (started) return;
-      started = true; auto = !!isAuto;
-      remember();
-      $('appWrap').hidden = false;
-      root.classList.add('running');
-      startLoader();
-      $('app').src = APP_URL;
-      fallback = setTimeout(failed, WAIT);
-    }
-  
-    function failed() {
-      if (!auto) return location.replace(APP_URL);   // they pressed the button: go to the real link
-      failedOnce = true; forget();                    // automatic try didn't work: show the card + notice
-      clearInterval(msgTimer); clearInterval(barTimer);
-      $('app').src = 'about:blank';
-      $('appWrap').hidden = true;
-      root.classList.remove('running', 'fast');
-      $('notice').hidden = false;
-      started = false;
-    }
-  
-    window.addEventListener('message', e => {
-      let ok = false;
-      try { ok = /\.googleusercontent\.com$/.test(new URL(e.origin).hostname); } catch (x) {}
-      if (started && ok && e.data && e.data.acLoadManager === 'ready') { clearTimeout(fallback); finishLoader(); }
-    });
-  
-    $('go').href = APP_URL;
-    $('go').addEventListener('click', e => {
-      e.preventDefault();
-      if (failedOnce) return location.href = APP_URL;   // embedding didn't work here, open directly
-      $('notice').hidden = true; openApp(false);
-    });
-    $('switch').href = "https://accounts.google.com/AccountChooser?hd=asiancollege.edu.ph&continue=" + encodeURIComponent(APP_URL);
-    $('switch').addEventListener('click', remember);
-  
-    if (root.classList.contains('fast')) openApp(true);
-  </script>
+<script>
+  const APP_URL = "https://script.google.com/a/macros/asiancollege.edu.ph/s/AKfycbwk5sy4hql54rpWRsr0XIM3Ye_hPyk7TlQntpqBcSu_-fIA9yTZ96mH3RzwQCDS6km1/exec";
+  const WAIT = 15000, KB = 'ac_blocked', DAY = 864e5;
+  const $ = id => document.getElementById(id);
+  const root = document.documentElement;
+  let started = false, fallback = null, msgTimer, barTimer;
+
+  const MSGS = ['Connecting to your school account…', 'Checking your access…', 'Loading your dashboard…', 'Almost there…'];
+
+  function startLoader() {
+    const msg = $('ldMsg'), bar = $('ldBar'); let i = 0, p = 8;
+    msg.textContent = MSGS[0]; msg.style.opacity = 1; bar.style.width = p + '%';
+    msgTimer = setInterval(() => {
+      i++;
+      msg.style.opacity = 0;
+      setTimeout(() => { msg.textContent = MSGS[i]; msg.style.opacity = 1; }, 180);
+      if (i >= MSGS.length - 1) clearInterval(msgTimer);
+    }, 1800);
+    barTimer = setInterval(() => { p += (90 - p) * 0.12; bar.style.width = p + '%'; }, 500);
+  }
+
+  function finishLoader() {
+    clearInterval(msgTimer); clearInterval(barTimer);
+    const l = $('appLoad'); if (!l) return;
+    $('ldMsg').textContent = 'Welcome!'; $('ldBar').style.width = '100%';
+    setTimeout(() => { l.classList.add('out'); setTimeout(() => l.remove(), 500); }, 350);
+  }
+
+  const blockedRecently = () => { try { const t = +localStorage.getItem(KB); return !!t && Date.now() - t < DAY; } catch (e) { return false; } };
+  const markBlocked = () => { try { localStorage.setItem(KB, String(Date.now())); } catch (e) {} };
+  const clearBlocked = () => { try { localStorage.removeItem(KB); } catch (e) {} };
+
+  function openApp() {
+    if (started) return; started = true;
+    $('appWrap').hidden = false;
+    root.classList.add('running');
+    startLoader();
+    // this browser blocked embedding recently: skip the wait and open the dashboard directly
+    if (blockedRecently() && location.search.indexOf('embed') < 0) { setTimeout(() => location.replace(APP_URL), 900); return; }
+    $('app').src = APP_URL;
+    fallback = setTimeout(() => { markBlocked(); location.replace(APP_URL); }, WAIT);
+  }
+
+  window.addEventListener('message', e => {
+    let ok = false;
+    try { ok = /\.googleusercontent\.com$/.test(new URL(e.origin).hostname); } catch (x) {}
+    if (started && ok && e.data && e.data.acLoadManager === 'ready') { clearTimeout(fallback); clearBlocked(); finishLoader(); }
+  });
+
+  $('go').href = APP_URL;
+  $('go').addEventListener('click', e => { e.preventDefault(); openApp(); });
+  $('switch').href = "https://accounts.google.com/AccountChooser?hd=asiancollege.edu.ph&continue=" + encodeURIComponent(APP_URL);
+
+  if (root.classList.contains('fast')) openApp();   // admins go straight in
+</script>
 </body>
 </html>
