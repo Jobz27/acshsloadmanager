@@ -1731,7 +1731,14 @@
     body.in .blk .rm{font-size:calc(10.5px*var(--k)*var(--tt,1));margin-top:calc(3px*var(--tt,1))}
     body.in .grid td.one .sj{font-size:calc(12px*var(--k)*var(--tt,1))}
     body.in .grid td.one .in,body.in .grid td.one .rm{font-size:calc(11.5px*var(--k)*var(--tt,1))}
-    body.in .grid td.t{font-size:calc(10.5px*var(--k)*var(--tt
+    body.in .grid td.t{font-size:calc(10.5px*var(--k)*var(--tt,1))}
+  }
+
+  @media print{
+    #printHead{margin:0 0 9mm}          /* about two blank lines before the table */
+    .top{display:none!important}        /* chips and buttons stay out of the printout */
+    .card{margin:0}
+  }
   </style>
   <script>
     /* shows any script error on the page itself, so a blank screen can never hide it */
@@ -1751,6 +1758,7 @@
     <h1>Asian College SHS &middot; Teacher Access</h1>
     <div class="swatches" id="themes"></div>
   </header>
+  <div id="printHead"></div>
   <main id="app"></main>
 
   <dialog id="icsDlg">
@@ -1772,7 +1780,6 @@
   </dialog>
   <div id="toast"></div>
   <div id="termList"></div>
-  <div id="printHead"></div>
 
   <script>
     const DAYS = [['M','Mon','MONDAY'],['T','Tue','TUESDAY'],['W','Wed','WEDNESDAY'],['H','Thu','THURSDAY'],['F','Fri','FRIDAY']];
