@@ -2439,6 +2439,41 @@ function showLoading(msg) {
     return '<div class="chb"><i>' + E.clock + '</i><div><span>Last updated ' + ago(last) + '</span></div><button onclick="openChanges()">View changes</button></div>';
   }
   
+
+  /* reads "SUBJECT · SECTION · TEACHER · MW 07:00-08:30 · Rm 101" from the change log */
+  function chParse(t) {
+    const p = String(t || '').split(' · ').map(x => x.trim()).filter(Boolean), o = {subject: p[0] || '', sec: '', who: '', when: '', room: ''};
+    p.forEach(x => {
+      if (/^Rm\s/i.test(x)) o.room = x.replace(/^Rm\s+/i, '');
+      else { const m = /^([MTWThF]+)\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})$/.exec(x); if (m) o.when = m[1] + ' ' + fmtAP(toMin(m[2])) + E.en + fmtAP(toMin(m[3])); }
+    });
+    const rest = p.slice(1).filter(x => !/^Rm\s/i.test(x) && !/^[MTWThF]+\s+\d{1,2}:\d{2}-/.test(x) && x !== '(section)');
+    o.sec = rest[0] || ''; o.who = rest[1] || '';
+    return o;
+  }
+  /* what a change means for ME: for advisory sections, say it in terms of that section instead of showing the raw before/after */
+  function chBody(c) {
+    const raw = () => c.to ? '<div class="was">' + esc(c.text) + '</div><div class="now">' + esc(c.to) + '</div>' : esc(c.text);
+    if (!c.adv) return raw();
+    const adv = new Set(((D && D.sections) || []).map(s => secKey(s.name)));
+    const mine = o => secParts(o.sec).filter(p => adv.has(secKey(p)));
+    const what = o => '<b>' + esc(o.subject) + '</b>' + (o.who ? ' (' + esc(o.who) + ')' : '');
+    const tail = o => (o.when ? ' ' + E.dot + ' ' + esc(o.when) : '') + (o.room ? ' ' + E.dot + ' Rm ' + esc(o.room) : '');
+    const B = chParse(c.text);
+    if (c.to) {
+      const A = chParse(c.to), b = mine(B), a = mine(A);
+      if (B.subject === A.subject && B.who === A.who) {
+        if (b.length && !a.length) return what(A) + ' was moved out of <b>' + esc(b[0]) + '</b>' + (A.sec ? ' to <b>' + esc(A.sec) + '</b>' : '') + tail(A);
+        if (a.length && !b.length) return what(A) + ' was moved into <b>' + esc(a[0]) + '</b>' + (B.sec ? ' from <b>' + esc(B.sec) + '</b>' : '') + tail(A);
+      }
+      return raw();
+    }
+    const s = mine(B)[0];
+    if (s && c.kind === 'added') return what(B) + ' was added to <b>' + esc(s) + '</b>' + tail(B);
+    if (s && c.kind === 'removed') return what(B) + ' was removed from <b>' + esc(s) + '</b>' + tail(B);
+    return raw();
+  }
+
   function openChanges() {
     const prev = seenTs(), list = chList();
     const lab = {added: 'New', removed: 'Removed', changed: 'Changed', info: 'Update'};
@@ -2447,7 +2482,7 @@ function showLoading(msg) {
       const fresh = c.ts > prev;
       return '<div class="chi ' + c.kind + (fresh ? ' fresh' : '') + '"><span class="cbd">' + lab[c.kind] + '</span><div class="cbody">'
         + (c.adv ? '<i class="av2" style="font-style:normal">Advisory</i>' : '')
-        + (c.to ? '<div class="was">' + esc(c.text) + '</div><div class="now">' + esc(c.to) + '</div>' : esc(c.text))
+        + chBody(c)
         + '</div><small>' + ago(c.ts) + (fresh ? '<span class="nw">NEW</span>' : '') + '</small></div>';
     }).join('') || '<div class="empty">No changes yet.</div>';
     markSeen();
