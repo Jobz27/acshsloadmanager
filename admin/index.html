@@ -144,13 +144,17 @@
         <h2>Faculty &amp; Section Loading</h2>
         <div class="msg" id="ldMsg">Connecting to your school account…</div>
         <div class="track"><i id="ldBar"></i></div>
+        <div id="stuck" hidden style="margin-top:20px">
+          <p style="margin:0 0 10px;font-size:13px">This is taking longer than usual.</p>
+          <a id="direct" class="btn pri" href="#">Open directly</a>
+        </div>
       </div>
     </div>
   </div>
 
 <script>
   const APP_URL = "https://script.google.com/a/macros/asiancollege.edu.ph/s/AKfycbwk5sy4hql54rpWRsr0XIM3Ye_hPyk7TlQntpqBcSu_-fIA9yTZ96mH3RzwQCDS6km1/exec";
-  const WAIT = 5000, KB = 'ac_blocked', DAY = 864e5;
+  const WAIT = 20000, KB = 'ac_blocked', DAY = 864e5;
   const $ = id => document.getElementById(id);
   const root = document.documentElement;
   let started = false, fallback = null, msgTimer, barTimer;
@@ -180,15 +184,20 @@
   const markBlocked = () => { try { localStorage.setItem(KB, String(Date.now())); } catch (e) {} };
   const clearBlocked = () => { try { localStorage.removeItem(KB); } catch (e) {} };
 
+  function showStuck() {
+    clearInterval(msgTimer); clearInterval(barTimer);
+    $('ldMsg').textContent = 'Still connecting…';
+    $('stuck').hidden = false;
+  }
+
   function openApp() {
     if (started) return; started = true;
+    clearBlocked();                                   // never trust an old flag
     $('appWrap').hidden = false;
     root.classList.add('running');
     startLoader();
-    // this browser blocked embedding recently: skip the wait and open the dashboard directly
-    if (blockedRecently() && location.search.indexOf('embed') < 0) { setTimeout(() => location.replace(APP_URL), 900); return; }
     $('app').src = APP_URL;
-    fallback = setTimeout(() => { markBlocked(); location.replace(APP_URL); }, WAIT);
+    fallback = setTimeout(showStuck, WAIT);           // no automatic redirect any more
   }
 
   window.addEventListener('message', e => {
@@ -197,7 +206,7 @@
     if (started && ok && e.data && e.data.acLoadManager === 'ready') { clearTimeout(fallback); clearBlocked(); finishLoader(); }
   });
 
-  $('go').href = APP_URL;
+  $('direct').href = APP_URL;
   $('go').addEventListener('click', e => { e.preventDefault(); openApp(); });
   $('switch').href = "https://accounts.google.com/AccountChooser?hd=asiancollege.edu.ph&continue=" + encodeURIComponent(APP_URL);
 
