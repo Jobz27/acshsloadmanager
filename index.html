@@ -1739,6 +1739,10 @@
     .top{display:none!important}        /* chips and buttons stay out of the printout */
     .card{margin:0}
   }
+  /* ===== section tags inside each block ===== */
+  .stag{display:inline-block;margin:1px 2px 0;padding:.06em .65em;border-radius:99px;background:hsl(var(--sc) 55% 36%);color:#fff;
+    font-size:.95em;font-weight:800;letter-spacing:.3px;line-height:1.4;white-space:nowrap;box-shadow:0 1px 3px rgba(23,27,45,.25)}
+  .grid td.blk .in:has(.stag){opacity:1}
   </style>
   <script>
     /* shows any script error on the page itself, so a blank screen can never hide it */
@@ -1820,6 +1824,29 @@
     try { return await res.json(); }
     catch (e3) { throw new Error('The server sent an unexpected reply. Please try again in a moment.'); }
   }
+
+  /* ----- section tag colours: same section = same colour, and different sections on one timetable never look alike ----- */
+  const secKey = s => String(s || '').replace(/[\s\-_]/g, '').toUpperCase();
+  function secParts(s) {
+    const seen = {}, out = [];
+    String(s || '').split(/[,;+\/&]/).forEach(p => { p = p.trim(); const k = secKey(p); if (k && !seen[k]) { seen[k] = 1; out.push(p); } });
+    return out;
+  }
+  const strHash = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h; };
+  function secHueMap(loads) {
+    const byKey = new Map();
+    loads.forEach(l => secParts(l.Section).forEach(p => { if (!byKey.has(secKey(p))) byKey.set(secKey(p), p); }));
+    const names = [...byKey.values()].sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+    const used = [], map = {};
+    const far = h => used.every(u => { const d = Math.abs(h - u); return Math.min(d, 360 - d) >= 24; });
+    names.forEach(n => {
+      let h = strHash(secKey(n)) % 360;
+      for (let i = 0; i < 15 && !far(h); i++) h = (h + 25) % 360;
+      used.push(h); map[secKey(n)] = h;
+    });
+    return map;
+  }
+  const secPills = (txt, map) => secParts(txt).map(p => '<span class="stag" style="--sc:' + (map[secKey(p)] != null ? map[secKey(p)] : strHash(secKey(p)) % 360) + '">' + esc(p) + '</span>').join('');
 
   function toast(msg, bad) {
     const t = $('toast'); t.textContent = msg; t.className = bad ? 'bad' : '';
@@ -1965,6 +1992,7 @@ async function signIn(code, term, opts) {
   function gridHtml(loads, tD, nD, isMe) {
     const S = toMin(D.config.dayStart), E2 = toMin(D.config.dayEnd), n = (E2 - S) / 30;
     const starts = DAYS.map(() => ({})), cov = DAYS.map(() => ({}));
+    const SH = isMe ? secHueMap(loads) : {};
     loads.forEach(l => {
       const a = (toMin(l.Start) - S) / 30, b = (toMin(l.End) - S) / 30;
       if (a < 0 || b > n || b <= a) return;
@@ -1984,9 +2012,10 @@ async function signIn(code, term, opts) {
         const kind = lunch ? 'lunch' : cl ? 'cls' : 'nt';
         const who = isMe ? esc(l.Section) : esc(l.FacultyID ? shortP(l.FacultyID) : '');
         const rm = esc(l.Room || '');
+        const whoHtml = isMe ? secPills(l.Section, SH) : who;
         const body = s.span === 1
-          ? '<span class="sj">' + esc(l.Subject) + '</span>' + (who ? '<span class="in">' + who + '</span>' : '') + (rm ? '<span class="rm">' + rm + '</span>' : '')
-          : '<div class="sj">' + esc(l.Subject) + '</div>' + (who ? '<div class="in">' + who + '</div>' : '') + (rm ? '<div class="rm">' + rm + '</div>' : '');
+          ? '<span class="sj">' + esc(l.Subject) + '</span>' + (who ? '<span class="in">' + whoHtml + '</span>' : '') + (rm ? '<span class="rm">' + rm + '</span>' : '')
+          : '<div class="sj">' + esc(l.Subject) + '</div>' + (who ? '<div class="in">' + whoHtml + '</div>' : '') + (rm ? '<div class="rm">' + rm + '</div>' : '');
         let style = '';
         if (cl) { const k = subjCol(l.Subject); style = ' style="background:' + k.bg + ';color:' + k.ink + ';box-shadow:inset 4px 0 0 ' + k.bar + '"'; }
         const tip = [l.Subject, who, l.Room, l.Days + ' ' + fmtAP(toMin(l.Start)) + E.en + fmtAP(toMin(l.End))].filter(Boolean).join(' ' + E.dot + ' ');
