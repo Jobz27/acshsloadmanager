@@ -1744,6 +1744,43 @@
     font-size:.95em;font-weight:800;letter-spacing:.3px;line-height:1.4;white-space:nowrap;box-shadow:0 1px 3px rgba(23,27,45,.25)}
   .grid td.blk .in:has(.stag){opacity:1}
 
+  /* ===== more themes ===== */
+  [data-theme=sakura]{--pri:#be185d;--pri2:#9333ea;--glow:rgba(190,24,93,.30);--bg:#ffe0ec;--soft:#ffe4ef;--soft2:#fff0f6;--bd:#ffc1da;
+    --hero1:#ffc2dc;--hero2:#e9c9ff;--cardbg:rgba(255,244,249,.92);--blob1:#ff9ec7;--blob2:#d8b4fe;--blob3:#ffd1a8;--hov:#fff5f9;--surf2:#fffafc;
+    --track:#f7e6ee;--hbg:linear-gradient(110deg,#9d174d,#7e22ce)}
+  [data-theme=royal]{--pri:#1e3a8a;--pri2:#a16207;--glow:rgba(30,58,138,.28);--bg:#f3ecd9;--ink:#1a1a2e;--mute:#4a4a63;--soft:#ece6d0;--soft2:#f7f1e0;--bd:#dccf9f;
+    --hero1:#e8dca8;--hero2:#cdd7f5;--cardbg:rgba(252,249,238,.93);--blob1:#e5c76b;--blob2:#93a8e8;--blob3:#f0d9a0;--hov:#faf6e8;--surf2:#fdfbf3;
+    --track:#ebe4cf;--hbg:linear-gradient(110deg,#172554,#1e3a8a 55%,#92400e)}
+  [data-theme=mocha]{--pri:#7c3f1d;--pri2:#b8651b;--glow:rgba(124,63,29,.30);--bg:#eadccd;--ink:#2b1d14;--mute:#5e4636;--soft:#f0e2d2;--soft2:#f8efe4;--bd:#dcc2a6;
+    --hero1:#e8c9a8;--hero2:#f0d9b5;--cardbg:rgba(252,246,238,.93);--blob1:#d9a273;--blob2:#e8c08a;--blob3:#c9d1a8;--hov:#fbf5ec;--surf2:#fdf9f3;
+    --track:#efe3d4;--hbg:linear-gradient(110deg,#4a2511,#7c3f1d,#a05a1e)}
+  [data-theme=aurora]{color-scheme:dark;--bg:#060d1a;--ink:#eafcff;--mute:#b3d4dc;--line:#1f3a4a;--bad:#ff8f8f;--pri:#5eead4;--pri2:#a78bfa;--glow:rgba(94,234,212,.30);
+    --soft:#11303c;--soft2:#0f2833;--bd:#1e5266;--surf:#0d1f2d;--surf2:#112636;--hov:#153044;--track:#173344;--hero1:#0b3a4a;--hero2:#2a1a5e;
+    --cardbg:rgba(13,31,45,.94);--blob1:#0e7490;--blob2:#6d28d9;--blob3:#047857;--hbg:linear-gradient(110deg,#0f766e,#4c1d95,#0e7490);--edge:#2f8a9f;--edge2:#1f5a6c}
+  [data-theme=neon]{color-scheme:dark;--bg:#07040f;--ink:#f5eaff;--mute:#cdb8e8;--line:#3a2260;--bad:#ff7a9c;--pri:#22d3ee;--pri2:#f472b6;--glow:rgba(244,114,182,.38);
+    --soft:#231445;--soft2:#1b1038;--bd:#4a2b88;--surf:#130a26;--surf2:#190d30;--hov:#22123f;--track:#2a1850;--hero1:#2a0f55;--hero2:#0b3a52;
+    --cardbg:rgba(19,10,38,.92);--blob1:#7c1fd6;--blob2:#0891b2;--blob3:#be185d;--hbg:linear-gradient(110deg,#4c1d95,#be185d,#0e7490);--edge:#7c3aed;--edge2:#4c2a95}
+
+  /* the two new dark themes get the same dark-mode touches as Midnight */
+  [data-theme=aurora] .card,[data-theme=neon] .card{border-color:rgba(255,255,255,.12);box-shadow:0 10px 34px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+  [data-theme=aurora] button.pri,[data-theme=neon] button.pri,[data-theme=aurora] .tab.on,[data-theme=neon] .tab.on,
+  [data-theme=aurora] .chip.hl,[data-theme=aurora] .chip.hl b,[data-theme=neon] .chip.hl,[data-theme=neon] .chip.hl b,
+  [data-theme=aurora] .grid tr.sum:last-child td,[data-theme=aurora] .grid tr.sum:last-child td.lbl,
+  [data-theme=neon] .grid tr.sum:last-child td,[data-theme=neon] .grid tr.sum:last-child td.lbl,
+  [data-theme=aurora] .grid td.t.tm.edge,[data-theme=neon] .grid td.t.tm.edge{color:#0f1220}
+  [data-theme=aurora] .err,[data-theme=neon] .err{background:#3a1d22;color:#ffb4b4;border-color:#6b2b33}
+
+  /* extra flair */
+  @keyframes hdrFlow{to{background-position:100% 0}}
+  [data-theme=aurora] header,[data-theme=neon] header,[data-theme=royal] header,[data-theme=sakura] header{background-size:220% 100%;animation:hdrFlow 12s ease-in-out infinite alternate}
+  [data-theme=royal] header{border-bottom:3px solid #d4a017}
+  [data-theme=aurora] .card{border-color:rgba(94,234,212,.30)}
+  [data-theme=neon] header h1{text-shadow:0 0 10px rgba(34,211,238,.9),0 0 22px rgba(244,114,182,.7)}
+  [data-theme=neon] .card{border-color:rgba(34,211,238,.45);box-shadow:0 0 0 1px rgba(244,114,182,.25),0 0 26px rgba(124,58,237,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+  [data-theme=neon] .hi .hn,[data-theme=neon] .hi .ch{text-shadow:0 0 12px rgba(34,211,238,.55)}
+  .swatches{flex-wrap:wrap;justify-content:flex-end}
+  @media(prefers-reduced-motion:reduce){header{animation:none!important}}
+
   /* ===== animated greeting ===== */
   .hi{display:flex;align-items:center;flex-wrap:wrap;gap:.3em}
   .hi .hw,.hi .hnw,.hi .wvw{display:inline-block}
@@ -1957,7 +1994,9 @@
 
   /* ---------- themes ---------- */
   const THEMES = [['indigo','Indigo','#5b5bf0','#8b5cf6'], ['ocean','Ocean','#0891b2','#3b82f6'],
-    ['forest','Forest','#059669','#65a30d'], ['sunset','Sunset','#f97316','#ec4899'], ['dark','Midnight','#171b2d','#5b5bf0']];
+    ['forest','Forest','#059669','#65a30d'], ['sunset','Sunset','#f97316','#ec4899'],
+    ['sakura','Sakura','#ec4899','#a855f7'], ['royal','Royal','#1e3a8a','#d4a017'], ['mocha','Mocha','#7c3f1d','#d9a273'],
+    ['aurora','Aurora','#5eead4','#a78bfa'], ['neon','Neon','#22d3ee','#f472b6'], ['dark','Midnight','#171b2d','#5b5bf0']];
   function setTheme(t, save) {
     if (!THEMES.some(x => x[0] === t)) t = 'indigo';
     document.documentElement.dataset.theme = t;
