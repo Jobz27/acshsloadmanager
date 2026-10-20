@@ -1813,6 +1813,35 @@
   @keyframes hiBob{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-.14em) scale(1.08)}}
   @keyframes hiSway{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg) scale(1.06)}}
   @media(prefers-reduced-motion:reduce){.hi *,.hi + .hsub{animation:none!important}.hsub{transition:none}}
+
+    /* ===== what changed ===== */
+  .chb{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:10px 14px;border-radius:16px;background:var(--soft);border:1px solid var(--bd)}
+  .chb>i{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:16px;background:var(--surf)}
+  .chb>div{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
+  .chb b{font-size:14px}
+  .chb span{font-size:12.5px;color:var(--mute)}
+  .chb.new{background:linear-gradient(100deg,var(--soft),var(--surf));border-left:5px solid var(--pri);box-shadow:0 4px 14px var(--glow)}
+  .chb.new>i{background:linear-gradient(135deg,var(--pri),var(--pri2));animation:bell 2.6s ease-in-out infinite}
+  @keyframes bell{0%,60%,100%{transform:rotate(0)}66%{transform:rotate(-14deg)}74%{transform:rotate(12deg)}82%{transform:rotate(-8deg)}90%{transform:rotate(4deg)}}
+  .chb .x2{padding:4px 10px;border-radius:99px;border:0;background:transparent;color:var(--mute)}
+  body.in .chb{flex:none}
+  
+  #chDlg{width:min(560px,94vw)}
+  .chl{display:flex;flex-direction:column;gap:8px;max-height:56vh;overflow:auto;margin-top:10px;padding-right:2px}
+  .chi{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surf2)}
+  .chi.fresh{border-color:var(--pri);box-shadow:0 0 0 2px color-mix(in srgb,var(--pri) 18%,transparent)}
+  .cbd{align-self:start;font-size:11px;font-weight:800;padding:2px 10px;border-radius:99px;background:var(--soft);color:var(--pri);white-space:nowrap}
+  .chi.added .cbd{background:#d6f4e6;color:#0b6b45}
+  .chi.removed .cbd{background:#fde2e2;color:#b42318}
+  .chi.changed .cbd{background:#ffefc2;color:#7a5b00}
+  .cbody{min-width:0;font-size:13px;word-break:break-word}
+  .cbody .was{color:var(--mute);text-decoration:line-through}
+  .cbody .now{font-weight:700}
+  .cbody .av2{display:inline-block;margin-right:6px;font-size:10px;font-weight:800;padding:1px 7px;border-radius:99px;background:var(--soft);color:var(--pri)}
+  .chi small{grid-column:2;color:var(--mute);font-weight:600}
+  .chi .nw{margin-left:8px;font-size:10px;font-weight:800;color:var(--pri)}
+  @media print{.chb,#chDlg{display:none!important}}
+  @media(prefers-reduced-motion:reduce){.chb.new>i{animation:none!important}}
   </style>
   <script>
     /* shows any script error on the page itself, so a blank screen can never hide it */
@@ -1852,6 +1881,12 @@
       <button id="icsX">Cancel</button><button id="icsC">Copy text</button><button class="pri" id="icsD">Download .ics</button>
     </div>
   </dialog>
+  <dialog id="chDlg">
+  <h2>What changed</h2>
+    <div class="mute small" id="chSub"></div>
+    <div id="chList" class="chl"></div>
+    <div class="acts"><button class="pri" id="chX">Got it</button></div>
+  </dialog>
   <div id="toast"></div>
   <div id="termList"></div>
 
@@ -1865,7 +1900,7 @@
     cap: '\uD83C\uDF93', school: '\uD83C\uDFEB', books: '\uD83D\uDCDA', pencil: '\u270F\uFE0F',
     files: '\uD83D\uDDC2\uFE0F', timer: '\u23F1\uFE0F', door: '\uD83D\uDEAA',
     teachers: '\uD83D\uDC69\u200D\uD83C\uDFEB', wave: '\uD83D\uDC4B',
-    refresh: '\u21BB', dot: '\u00B7', ell: '\u2026', en: '\u2013'
+    refresh: '\u21BB', dot: '\u00B7', ell: '\u2026', en: '\u2013', bell: '\uD83D\uDD14', clock: '\uD83D\uDD58', x: '\u2715'
   };
 
   const $ = id => document.getElementById(id);
@@ -2080,7 +2115,7 @@ async function signIn(code, term, opts) {
       if (opts.stored) { try { localStorage.removeItem('tc-code'); } catch (e) {} }
       showGate(r.error); return false;
     }
-    CODE = code; D = r; TERM = r.term;
+    CODE = code; D = r; D.skew = (r.now || Date.now()) - Date.now(); TERM = r.term;
     try {
       if (REMEMBER) localStorage.setItem('tc-code', code); else localStorage.removeItem('tc-code');
       localStorage.setItem('tc-term', TERM);
@@ -2186,6 +2221,7 @@ async function signIn(code, term, opts) {
       '<div class="ctl"><div><div class="hi' + (GREETED ? '' : ' play') + '"><span class="hw"><span class="tm ' + greetNow()[2] + '">' + greetNow()[1] + '</span> ' + greetNow()[0] + ',</span><span class="hnw"><span class="hn">' + letters((m.Title ? m.Title + ' ' : '') + lastName(m.Name)) + '</span></span><span class="wvw"><span class="wv" title="Wave back!">' + E.wave + '</span></span></div><div class="mute hsub" id="hsub">' + esc(m.Name) + '</div></div>'
       + '<div class="ctr"><div class="termdd" id="termDd"><button type="button" id="termBtn"><span id="termLbl">' + esc(TERM) + '</span></button></div>'
       + '<button id="rf">' + E.refresh + ' Refresh</button><button id="so">Sign out</button></div></div>'
+      + bannerHtml()
       + '<div class="tabs">' + tabs + '</div>'
       + '<section class="card" id="sheetCard">' + sheetHtml() + '</section>';
     GREETED = true; startHiCycle();
@@ -2366,6 +2402,61 @@ function showLoading(msg) {
   addEventListener('resize', () => { clearTimeout(roT); roT = setTimeout(fitSheet, 120); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitSheet);
 
+  /* ---------- what changed ---------- */
+  const chList = () => (D && D.changes) || [];
+  const nowMs = () => Date.now() + ((D && D.skew) || 0);
+  
+  function ago(ts) {
+    const m = Math.max(0, Math.round((nowMs() - ts) / 60000));
+    if (m < 1) return 'just now';
+    if (m < 60) return m + ' min ago';
+    const h = Math.round(m / 60);
+    if (h < 24) return h + (h === 1 ? ' hour' : ' hours') + ' ago';
+    const d = Math.round(h / 24);
+    if (d < 30) return d + (d === 1 ? ' day' : ' days') + ' ago';
+    const mo = Math.round(d / 30);
+    return mo + (mo === 1 ? ' month' : ' months') + ' ago';
+  }
+  
+  const seenKey = () => 'tc-seen-' + D.me.ID + '-' + TERM;
+  function seenTs() {
+    try { const v = +localStorage.getItem(seenKey()); if (v) return v; } catch (e) {}
+    return nowMs() - 7 * 864e5;                 // first visit on this device: anything from the last 7 days counts as new
+  }
+  function markSeen() {
+    const l = chList(); if (!l.length) return;
+    try { localStorage.setItem(seenKey(), String(l[0].ts)); } catch (e) {}
+  }
+  
+  function bannerHtml() {
+    const list = chList(); if (!list.length) return '';
+    const last = list[0].ts, prev = seenTs(), fresh = list.filter(c => c.ts > prev).length;
+    if (fresh) {
+      return '<div class="chb new"><i>' + E.bell + '</i><div><b>Your loading was updated ' + ago(last) + '</b><span>' + fresh + ' new change' + (fresh === 1 ? '' : 's') + ' since you last checked</span></div>'
+        + '<button class="pri" onclick="openChanges()">See what changed</button><button class="x2" title="Mark as read" onclick="readChanges()">' + E.x + '</button></div>';
+    }
+    if (nowMs() - last > 14 * 864e5) return '';
+    return '<div class="chb"><i>' + E.clock + '</i><div><span>Last updated ' + ago(last) + '</span></div><button onclick="openChanges()">View changes</button></div>';
+  }
+  
+  function openChanges() {
+    const prev = seenTs(), list = chList();
+    const lab = {added: 'New', removed: 'Removed', changed: 'Changed', info: 'Update'};
+    $('chSub').textContent = TERM + ' ' + E.dot + ' changes to your loading and your advisory classes';
+    $('chList').innerHTML = list.map(c => {
+      const fresh = c.ts > prev;
+      return '<div class="chi ' + c.kind + (fresh ? ' fresh' : '') + '"><span class="cbd">' + lab[c.kind] + '</span><div class="cbody">'
+        + (c.adv ? '<i class="av2" style="font-style:normal">Advisory</i>' : '')
+        + (c.to ? '<div class="was">' + esc(c.text) + '</div><div class="now">' + esc(c.to) + '</div>' : esc(c.text))
+        + '</div><small>' + ago(c.ts) + (fresh ? '<span class="nw">NEW</span>' : '') + '</small></div>';
+    }).join('') || '<div class="empty">No changes yet.</div>';
+    markSeen();
+    $('chDlg').showModal();
+  }
+  function readChanges() { markSeen(); render(); }
+  $('chX').onclick = () => $('chDlg').close();
+  $('chDlg').addEventListener('close', () => { if (D) render(); });      // refresh the banner after reading
+    
   /* ---------- start ---------- */
   (function () {
     let c = '', t = '';
