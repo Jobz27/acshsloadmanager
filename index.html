@@ -1753,15 +1753,29 @@
   .hi.play .hw{animation:hiUp .6s cubic-bezier(.2,.8,.2,1) both}
   .hi.play .hnw{animation:hiUp .6s .14s cubic-bezier(.2,.8,.2,1) both}
   .hi.play .wvw{animation:hiPop .55s .4s cubic-bezier(.2,1.4,.4,1) both}
-  .hi.play .wv{animation:hiWave 1.8s 1s ease-in-out 2}
+  .hi .wv{animation:hiWaveLoop 6s 1.2s ease-in-out infinite}
   .hi .wv.go{animation:hiWave 1.2s ease-in-out}
-  .hi.play + .hsub{animation:hiUp .6s .35s cubic-bezier(.2,.8,.2,1) both}
+  .hi.play + .hsub{animation:hiUp .6s .35s cubic-bezier(.2,.8,.2,1) backwards}
   @keyframes hiUp{from{opacity:0;transform:translateY(.7em)}}
   @keyframes hiPop{from{opacity:0;transform:scale(.2) rotate(-35deg)}}
   @keyframes hiShine{to{background-position:-220% 0}}
   @keyframes hiWave{0%,60%,100%{transform:rotate(0)}10%{transform:rotate(16deg)}20%{transform:rotate(-9deg)}
     30%{transform:rotate(16deg)}40%{transform:rotate(-5deg)}50%{transform:rotate(13deg)}}
-  @media(prefers-reduced-motion:reduce){.hi *,.hi + .hsub{animation:none!important}.hi .hn{color:var(--pri);background:none}}
+  /* always-on life: ripple through the name, periodic wave, floating sun/moon, rotating subtitle */
+  .hi .hn{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:var(--pri);animation:none}
+  .hi .ch{display:inline-block;animation:hiLet 4.2s ease-in-out infinite;animation-delay:calc(var(--i)*.09s + 1.6s)}
+  .hi .tm{display:inline-block;transform-origin:50% 50%}
+  .hi .tm.am{animation:hiSpin 16s linear infinite;filter:drop-shadow(0 0 6px rgba(255,190,40,.55))}
+  .hi .tm.pm{animation:hiBob 3.4s ease-in-out infinite}
+  .hi .tm.ev{animation:hiSway 4.4s ease-in-out infinite;filter:drop-shadow(0 0 6px rgba(255,236,150,.5))}
+  .hsub{min-height:1.5em;transition:opacity .35s ease,transform .35s ease}
+  .hsub.hs-out{opacity:0;transform:translateY(.45em)}
+  @keyframes hiLet{0%,40%,100%{transform:translateY(0);color:var(--pri)}12%{transform:translateY(-.17em) scale(1.08);color:var(--pri2)}26%{transform:translateY(0);color:var(--pri)}}
+  @keyframes hiWaveLoop{0%,22%,100%{transform:rotate(0)}3%{transform:rotate(16deg)}6%{transform:rotate(-9deg)}9%{transform:rotate(16deg)}12%{transform:rotate(-5deg)}15%{transform:rotate(13deg)}18%{transform:rotate(-3deg)}}
+  @keyframes hiSpin{to{transform:rotate(360deg)}}
+  @keyframes hiBob{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-.14em) scale(1.08)}}
+  @keyframes hiSway{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg) scale(1.06)}}
+  @media(prefers-reduced-motion:reduce){.hi *,.hi + .hsub{animation:none!important}.hsub{transition:none}}
   </style>
   <script>
     /* shows any script error on the page itself, so a blank screen can never hide it */
@@ -1898,7 +1912,43 @@
 
   let D = null, CODE = '', TAB = 'me', TERM = '', REMEMBER = true, GREETED = false;
   /* greeting follows the time on the teacher's own device */
-  const greet = () => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; };
+  const GREET = [['Good morning', '\u2600\uFE0F', 'am'], ['Good afternoon', '\uD83C\uDF24\uFE0F', 'pm'], ['Good evening', '\uD83C\uDF19', 'ev']];
+  const greetNow = () => { const h = new Date().getHours(); return GREET[h < 12 ? 0 : h < 18 ? 1 : 2]; };
+  /* every letter of the name is its own span so a wave can ripple through it */
+  const letters = t => [...String(t)].map((c, i) => '<span class="ch" style="--i:' + i + '">' + (c === ' ' ? '&nbsp;' : esc(c)) + '</span>').join('');
+
+  /* the line under the name keeps changing: who you are, what is on now, what is next, how full the week is */
+  let HI_T = 0;
+  function hiMessages() {
+    const now = new Date(), di = (now.getDay() + 6) % 7, mins = now.getHours() * 60 + now.getMinutes();
+    const cls = D.loads.filter(l => l.Type === 'Class' && !isLunch(l));
+    const today = di < 5 ? cls.filter(l => dayIdx(l.Days).includes(di)).sort((a, b) => toMin(a.Start) - toMin(b.Start)) : [];
+    const cur = today.find(l => toMin(l.Start) <= mins && mins < toMin(l.End));
+    const nxt = today.find(l => toMin(l.Start) > mins);
+    const lab = l => l.Subject + (l.Section ? ' ' + E.dot + ' ' + l.Section : '');
+    const out = [D.me.Name];
+    if (cur) out.push('\uD83D\uDD34 Now: ' + lab(cur) + ' until ' + fmtAP(toMin(cur.End)));
+    if (nxt) out.push('\u23ED\uFE0F Next: ' + lab(nxt) + ' at ' + fmtAP(toMin(nxt.Start)) + (nxt.Room ? ' ' + E.dot + ' ' + nxt.Room : ''));
+    else if (!cur && di < 5 && today.length) out.push('\uD83C\uDF89 That\u2019s a wrap for today');
+    out.push(di >= 5 ? '\uD83C\uDF34 Enjoy your weekend!' : today.length ? '\uD83D\uDCDA ' + today.length + ' class' + (today.length === 1 ? '' : 'es') + ' today' : '\u2615 No classes today');
+    const wk = D.loads.filter(l => !isLunch(l)).reduce((t, l) => t + hrs(l) * dayIdx(l.Days).length, 0);
+    if (wk) out.push('\u23F1\uFE0F ' + n2(wk) + (D.me.MaxUnits ? ' of ' + D.me.MaxUnits : '') + ' hrs this week');
+    return out;
+  }
+  function startHiCycle() {
+    clearInterval(HI_T);
+    const el = $('hsub');
+    if (!el || !D || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let i = 0;
+    HI_T = setInterval(() => {
+      const e2 = $('hsub');
+      if (!e2) return clearInterval(HI_T);
+      if (document.hidden) return;
+      const msgs = hiMessages(); i = (i + 1) % msgs.length;
+      e2.classList.add('hs-out');
+      setTimeout(() => { e2.textContent = msgs[i]; e2.classList.remove('hs-out'); }, 360);
+    }, 4500);
+  }
   /* wave back when the hand is touched or hovered */
   document.addEventListener('mouseover', e => {
     const w = e.target.closest && e.target.closest('.wv');
@@ -2006,7 +2056,7 @@ async function signIn(code, term, opts) {
 
   function signOut() {
     try { localStorage.removeItem('tc-code'); } catch (e) {}
-    CODE = ''; TAB = 'me'; GREETED = false; showGate();
+    CODE = ''; TAB = 'me'; GREETED = false; clearInterval(HI_T); showGate();
   }
 
   /* ---------- timetable ---------- */
@@ -2094,12 +2144,12 @@ async function signIn(code, term, opts) {
     const tabs = '<button class="tab' + (TAB === 'me' ? ' on' : '') + '" data-k="me">' + E.me + ' My loading</button>'
       + D.sections.map(s => '<button class="tab' + (TAB === s.key ? ' on' : '') + '" data-k="' + esc(s.key) + '">' + E.cap + ' ' + esc(s.name) + ' <small>advisory</small></button>').join('');
     $('app').innerHTML =
-      '<div class="ctl"><div><div class="hi' + (GREETED ? '' : ' play') + '"><span class="hw">' + greet() + ',</span><span class="hnw"><span class="hn">' + esc(m.Title ? m.Title + ' ' : '') + esc(lastName(m.Name)) + '</span></span><span class="wvw"><span class="wv" title="Wave back!">' + E.wave + '</span></span></div><div class="mute hsub">' + esc(m.Name) + '</div></div>'
+      '<div class="ctl"><div><div class="hi' + (GREETED ? '' : ' play') + '"><span class="hw"><span class="tm ' + greetNow()[2] + '">' + greetNow()[1] + '</span> ' + greetNow()[0] + ',</span><span class="hnw"><span class="hn">' + letters((m.Title ? m.Title + ' ' : '') + lastName(m.Name)) + '</span></span><span class="wvw"><span class="wv" title="Wave back!">' + E.wave + '</span></span></div><div class="mute hsub" id="hsub">' + esc(m.Name) + '</div></div>'
       + '<div class="ctr"><div class="termdd" id="termDd"><button type="button" id="termBtn"><span id="termLbl">' + esc(TERM) + '</span></button></div>'
       + '<button id="rf">' + E.refresh + ' Refresh</button><button id="so">Sign out</button></div></div>'
       + '<div class="tabs">' + tabs + '</div>'
       + '<section class="card" id="sheetCard">' + sheetHtml() + '</section>';
-    GREETED = true;
+    GREETED = true; startHiCycle();
     initTermDd();
     $('rf').onclick = async () => { showLoading('Refreshing' + E.ell); const ok = await signIn(CODE, TERM, {keep: true}); if (ok) toast('Up to date'); };
     $('so').onclick = signOut;
