@@ -1743,6 +1743,25 @@
   .stag{display:inline-block;margin:1px 2px 0;padding:.06em .65em;border-radius:99px;background:hsl(var(--sc) 55% 36%);color:#fff;
     font-size:.95em;font-weight:800;letter-spacing:.3px;line-height:1.4;white-space:nowrap;box-shadow:0 1px 3px rgba(23,27,45,.25)}
   .grid td.blk .in:has(.stag){opacity:1}
+
+  /* ===== animated greeting ===== */
+  .hi{display:flex;align-items:center;flex-wrap:wrap;gap:.3em}
+  .hi .hw,.hi .hnw,.hi .wvw{display:inline-block}
+  .hi .hn{display:inline-block;color:transparent;-webkit-background-clip:text;background-clip:text;
+    background-image:linear-gradient(100deg,var(--pri),var(--pri2),var(--pri));background-size:220% 100%;animation:hiShine 6s linear infinite}
+  .hi .wv{display:inline-block;transform-origin:70% 78%;cursor:pointer;user-select:none}
+  .hi.play .hw{animation:hiUp .6s cubic-bezier(.2,.8,.2,1) both}
+  .hi.play .hnw{animation:hiUp .6s .14s cubic-bezier(.2,.8,.2,1) both}
+  .hi.play .wvw{animation:hiPop .55s .4s cubic-bezier(.2,1.4,.4,1) both}
+  .hi.play .wv{animation:hiWave 1.8s 1s ease-in-out 2}
+  .hi .wv.go{animation:hiWave 1.2s ease-in-out}
+  .hi.play + .hsub{animation:hiUp .6s .35s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes hiUp{from{opacity:0;transform:translateY(.7em)}}
+  @keyframes hiPop{from{opacity:0;transform:scale(.2) rotate(-35deg)}}
+  @keyframes hiShine{to{background-position:-220% 0}}
+  @keyframes hiWave{0%,60%,100%{transform:rotate(0)}10%{transform:rotate(16deg)}20%{transform:rotate(-9deg)}
+    30%{transform:rotate(16deg)}40%{transform:rotate(-5deg)}50%{transform:rotate(13deg)}}
+  @media(prefers-reduced-motion:reduce){.hi *,.hi + .hsub{animation:none!important}.hi .hn{color:var(--pri);background:none}}
   </style>
   <script>
     /* shows any script error on the page itself, so a blank screen can never hide it */
@@ -1877,7 +1896,14 @@
   }
   const shortP = id => { const p = D && D.people[id]; return p ? ((p.Title ? p.Title + ' ' : '') + lastName(p.Name)).toUpperCase() : ''; };
 
-  let D = null, CODE = '', TAB = 'me', TERM = '', REMEMBER = true;
+  let D = null, CODE = '', TAB = 'me', TERM = '', REMEMBER = true, GREETED = false;
+  /* greeting follows the time on the teacher's own device */
+  const greet = () => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; };
+  /* wave back when the hand is touched or hovered */
+  document.addEventListener('mouseover', e => {
+    const w = e.target.closest && e.target.closest('.wv');
+    if (w && !w.classList.contains('go')) { w.classList.add('go'); setTimeout(() => w.classList.remove('go'), 1300); }
+  });
 
   /* ---------- themes ---------- */
   const THEMES = [['indigo','Indigo','#5b5bf0','#8b5cf6'], ['ocean','Ocean','#0891b2','#3b82f6'],
@@ -1980,7 +2006,7 @@ async function signIn(code, term, opts) {
 
   function signOut() {
     try { localStorage.removeItem('tc-code'); } catch (e) {}
-    CODE = ''; TAB = 'me'; showGate();
+    CODE = ''; TAB = 'me'; GREETED = false; showGate();
   }
 
   /* ---------- timetable ---------- */
@@ -2068,11 +2094,12 @@ async function signIn(code, term, opts) {
     const tabs = '<button class="tab' + (TAB === 'me' ? ' on' : '') + '" data-k="me">' + E.me + ' My loading</button>'
       + D.sections.map(s => '<button class="tab' + (TAB === s.key ? ' on' : '') + '" data-k="' + esc(s.key) + '">' + E.cap + ' ' + esc(s.name) + ' <small>advisory</small></button>').join('');
     $('app').innerHTML =
-      '<div class="ctl"><div><div class="hi">Hello, ' + esc(m.Title ? m.Title + ' ' : '') + esc(lastName(m.Name)) + ' ' + E.wave + '</div><div class="mute">' + esc(m.Name) + '</div></div>'
+      '<div class="ctl"><div><div class="hi' + (GREETED ? '' : ' play') + '"><span class="hw">' + greet() + ',</span><span class="hnw"><span class="hn">' + esc(m.Title ? m.Title + ' ' : '') + esc(lastName(m.Name)) + '</span></span><span class="wvw"><span class="wv" title="Wave back!">' + E.wave + '</span></span></div><div class="mute hsub">' + esc(m.Name) + '</div></div>'
       + '<div class="ctr"><div class="termdd" id="termDd"><button type="button" id="termBtn"><span id="termLbl">' + esc(TERM) + '</span></button></div>'
       + '<button id="rf">' + E.refresh + ' Refresh</button><button id="so">Sign out</button></div></div>'
       + '<div class="tabs">' + tabs + '</div>'
       + '<section class="card" id="sheetCard">' + sheetHtml() + '</section>';
+    GREETED = true;
     initTermDd();
     $('rf').onclick = async () => { showLoading('Refreshing' + E.ell); const ok = await signIn(CODE, TERM, {keep: true}); if (ok) toast('Up to date'); };
     $('so').onclick = signOut;
