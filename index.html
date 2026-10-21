@@ -2071,7 +2071,7 @@
     const pick = a => a[Math.floor(Math.random() * a.length)];
     const css = o => 'translate(' + o.x + 'px,' + o.y + 'px) scale(' + o.s + ') rotate(' + o.r + 'deg)';
     const COLORS = ['var(--blob1)', 'var(--blob2)', 'var(--blob3)', 'var(--pri)', 'var(--pri2)'];
-    const MAX = 6; let count = 0;
+    const MAX = 10; let count = 0; //spawn how many blobs
     function wander(el, cx, cy) {
       let cur = {x: 0, y: 0, s: 1, r: 0};
       const hop = () => {
