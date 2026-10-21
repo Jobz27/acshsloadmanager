@@ -1842,7 +1842,27 @@
   .chi .nw{margin-left:8px;font-size:10px;font-weight:800;color:var(--pri)}
   @media print{.chb,#chDlg{display:none!important}}
   @media(prefers-reduced-motion:reduce){.chb.new>i{animation:none!important}}
-  </style>
+  
+  /* ===== comfortable timetable: normal row height and readable text; the page scrolls instead of squeezing everything ===== */
+  @media screen and (min-width:901px) and (min-height:700px){
+    body.in{height:auto;min-height:100vh;display:block;overflow:visible}
+    body.in main{overflow:visible;position:static}
+    body.in #sheetCard{display:block}
+    body.in .gwrap{overflow:visible;position:static;flex:none}
+    body.in .grid{position:static;inset:auto;height:auto;font-size:calc(13px*var(--k))}
+    body.in .grid th,body.in .grid td{height:calc(31px*var(--k))}
+    body.in .grid thead th{height:auto;font-size:calc(12px*var(--k));padding:calc(9px*var(--k)) 4px}
+    body.in .grid td.t{font-size:calc(12px*var(--k))}
+    body.in .grid td.blk{padding:calc(5px*var(--k)) calc(8px*var(--k))}
+    body.in .blk .sj{font-size:calc(13.5px*var(--k))}
+    body.in .blk .in{font-size:calc(12px*var(--k));margin-top:calc(3px*var(--k))}
+    body.in .blk .rm{font-size:calc(11.5px*var(--k));margin-top:calc(2px*var(--k))}
+    body.in .grid td.one .sj{font-size:calc(13.5px*var(--k))}
+    body.in .grid td.one .in,body.in .grid td.one .rm{font-size:calc(12.5px*var(--k))}
+    body.in .grid tr.sum td{height:calc(30px*var(--k));font-size:calc(13px*var(--k))}
+    body.in .grid col:nth-child(-n+2){width:calc(62px*var(--k))!important}
+  }
+</style>
   <script>
     /* shows any script error on the page itself, so a blank screen can never hide it */
   window.onerror = function (msg, src, line, col) {
@@ -2381,7 +2401,7 @@ function showLoading(msg) {
   function fitSheet() {
     const card = $('sheetCard'); if (!card) return;
     card.style.removeProperty('--tt');
-    if (!matchMedia(FULL_MQ).matches) return;          // small screens scroll normally
+    return;                                            // the timetable keeps a comfortable size and the page scrolls instead
     const wrap = card.querySelector('.gwrap'), tbl = wrap && wrap.querySelector('.grid');
     if (!tbl) return;
     let s = 1;
