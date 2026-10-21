@@ -2087,7 +2087,7 @@
   const shortP = id => { const p = D && D.people[id]; return p ? ((p.Title ? p.Title + ' ' : '') + lastName(p.Name)).toUpperCase() : ''; };
 
   const defaultTab = () => matchMedia('(max-width:700px)').matches ? 'today' : 'me';
-  let D = null, CODE = '', TAB = defaultTab(), TERM = '', REMEMBER = true, GREETED = false;true, GREETED = false;
+  let D = null, CODE = '', TAB = defaultTab(), TERM = '', REMEMBER = true, GREETED = false;
   /* greeting follows the time on the teacher's own device */
   const GREET = [['Good morning', '\u2600\uFE0F', 'am'], ['Good afternoon', '\uD83C\uDF24\uFE0F', 'pm'], ['Good evening', '\uD83C\uDF19', 'ev']];
   const greetNow = () => { const h = new Date().getHours(); return GREET[h < 12 ? 0 : h < 18 ? 1 : 2]; };
@@ -2271,7 +2271,7 @@ function offBanner() {
   function signOut() {
     try { localStorage.removeItem('tc-code'); } catch (e) {}
     cacheClear();                                           // the saved schedule leaves this device too
-    CODE = ''; TAB = 'me'; GREETED = false; clearInterval(HI_T); showGate();
+    CODE = ''; TAB = defaultTab(); GREETED = false; clearInterval(HI_T); showGate();
   }
 
   /* ---------- timetable ---------- */
@@ -2323,6 +2323,7 @@ function offBanner() {
   const chip = (ico, label, val, hl) => '<span class="chip' + (hl ? ' hl' : '') + '"><i>' + ico + '</i>' + (label ? label + ' ' : '') + '<b>' + val + '</b></span>';
 
   function sheetHtml() {
+    if (TAB === 'today') return todayHtml();
     const cur = current(), loads = cur.loads, isMe = cur.kind === 'me';
     const tD = [0, 0, 0, 0, 0], nD = [0, 0, 0, 0, 0];
     loads.forEach(l => dayIdx(l.Days).forEach(di => { if (l.Type === 'Class') tD[di] += hrs(l); else if (!isLunch(l)) nD[di] += hrs(l); }));
@@ -2356,8 +2357,9 @@ function offBanner() {
   function render() {
     const m = D.me;
     document.body.classList.add('in');
-    const tabs = '<button class="tab' + (TAB === 'today' ? ' on' : '') + '" data-k="today">\uD83D\uDCC6 Today</button>' + '<button class="tab' + (TAB === 'me')
-      + D.sections.map(s => '<button class="tab' + (TAB === s.key ? ' on' : '') + '" data-k="' + esc(s.key) + '">' + E.cap + ' ' + esc(s.name) + ' <small>advisory</small></button>').join(''); 'me';
+    const tabs = '<button class="tab' + (TAB === 'today' ? ' on' : '') + '" data-k="today">\uD83D\uDCC6 Today</button>'
+      + '<button class="tab' + (TAB === 'me' ? ' on' : '') + '" data-k="me">' + E.me + ' My loading</button>'
+      + D.sections.map(s => '<button class="tab' + (TAB === s.key ? ' on' : '') + '" data-k="' + esc(s.key) + '">' + E.cap + ' ' + esc(s.name) + ' <small>advisory</small></button>').join('');
     $('app').innerHTML =
       '<div class="ctl"><div><div class="hi' + (GREETED ? '' : ' play') + '"><span class="hw"><span class="tm ' + greetNow()[2] + '">' + greetNow()[1] + '</span> ' + greetNow()[0] + ',</span><span class="hnw"><span class="hn">' + letters((m.Title ? m.Title + ' ' : '') + lastName(m.Name)) + '</span></span><span class="wvw"><span class="wv" title="Wave back!">' + E.wave + '</span></span></div><div class="mute hsub" id="hsub">' + esc(m.Name) + '</div></div>'
       + '<div class="ctr"><div class="termdd" id="termDd"><button type="button" id="termBtn"><span id="termLbl">' + esc(TERM) + '</span></button></div>'
