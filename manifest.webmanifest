@@ -1,0 +1,17 @@
+{
+  "name": "AC SHS Load Manager",
+  "short_name": "AC SHS Load",
+  "description": "Teacher access to your SHS teaching load and advisory classes.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#e4e5ff",
+  "theme_color": "#4338ca",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
