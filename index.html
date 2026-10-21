@@ -6,6 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AC SHS Load Manager | Teacher Access</title>
   <link rel="icon" type="image/png" href="https://i.ibb.co/Y7gR9QbY/AC-SHS-Logo.png">
+  <!-- installable app (PWA): needs manifest.webmanifest, sw.js and the icons/ folder next to this page -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#4338ca">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="AC SHS Load">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
@@ -1823,6 +1831,9 @@
   .chb.new{background:linear-gradient(100deg,var(--soft),var(--surf));border-left:5px solid var(--pri);box-shadow:0 4px 14px var(--glow)}
   .chb.new>i{background:linear-gradient(135deg,var(--pri),var(--pri2));animation:bell 2.6s ease-in-out infinite}
   @keyframes bell{0%,60%,100%{transform:rotate(0)}66%{transform:rotate(-14deg)}74%{transform:rotate(12deg)}82%{transform:rotate(-8deg)}90%{transform:rotate(4deg)}}
+  .chb.off{background:color-mix(in srgb,var(--warn) 16%,var(--surf));border-color:color-mix(in srgb,var(--warn) 55%,var(--bd))}
+  #inst[hidden],#inst2[hidden]{display:none!important}
+  .insl{margin:12px 0 4px;padding-left:20px;display:grid;gap:8px;font-size:14px;line-height:1.4}
   .chb .x2{padding:4px 10px;border-radius:99px;border:0;background:transparent;color:var(--mute)}
   body.in .chb{flex:none}
   
@@ -1907,6 +1918,16 @@
     <div id="chList" class="chl"></div>
     <div class="acts"><button class="pri" id="chX">Got it</button></div>
   </dialog>
+  <dialog id="instDlg">
+    <h2>Add to home screen</h2>
+    <div class="mute small">Open this page like an app, even with a weak signal.</div>
+    <ol class="insl">
+      <li><b>iPhone / iPad (Safari):</b> tap the <b>Share</b> button, then <b>Add to Home Screen</b>.</li>
+      <li><b>Android (Chrome):</b> tap the <b>&#8942;</b> menu, then <b>Install app</b> or <b>Add to Home screen</b>.</li>
+      <li><b>Computer (Chrome / Edge):</b> click the install icon at the right end of the address bar.</li>
+    </ol>
+    <div class="acts"><button class="pri" id="instX">Got it</button></div>
+  </dialog>
   <div id="toast"></div>
   <div id="termList"></div>
 
@@ -1944,7 +1965,7 @@
     } catch (e1) {
       try {
         res = await fetch(API_URL + '?action=teacher&code=' + encodeURIComponent(code) + '&term=' + encodeURIComponent(term || ''), {credentials: 'omit'});
-      } catch (e2) { throw new Error('Could not reach the server. Check your internet connection and try again.'); }
+      } catch (e2) { const off = new Error('Could not reach the server. Check your internet connection and try again.'); off.offline = true; throw off; }
     }
     try { return await res.json(); }
     catch (e3) { throw new Error('The server sent an unexpected reply. Please try again in a moment.'); }
@@ -2071,7 +2092,7 @@
     const pick = a => a[Math.floor(Math.random() * a.length)];
     const css = o => 'translate(' + o.x + 'px,' + o.y + 'px) scale(' + o.s + ') rotate(' + o.r + 'deg)';
     const COLORS = ['var(--blob1)', 'var(--blob2)', 'var(--blob3)', 'var(--pri)', 'var(--pri2)'];
-    const MAX = 10; let count = 0; //spawn how many blobs
+    const MAX = 6; let count = 0;
     function wander(el, cx, cy) {
       let cur = {x: 0, y: 0, s: 1, r: 0};
       const hop = () => {
@@ -2113,7 +2134,9 @@
       + '<input id="code" placeholder="XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="9">'
       + '<label class="chk"><input type="checkbox" id="rem" checked> Remember me on this device</label>'
       + '<div id="gerr" class="err"' + (msg ? '' : ' hidden') + '>' + esc(msg || '') + '</div>'
-      + '<button class="pri wide" id="go">Open my loading</button></div>';
+      + '<button class="pri wide" id="go">Open my loading</button>'
+      + '<button type="button" class="wide" id="inst2" hidden style="margin-top:10px">\uD83D\uDCF2 Add to home screen</button></div>';
+    $('inst2').onclick = installApp; syncInst();
     const inp = $('code');
     inp.oninput = () => { const v = normCode(inp.value).slice(0, 8); inp.value = v.length > 4 ? v.slice(0, 4) + '-' + v.slice(4) : v; $('gerr').hidden = true; };
     inp.onkeydown = e => { if (e.key === 'Enter') $('go').click(); };
@@ -2136,6 +2159,7 @@ async function signIn(code, term, opts) {
       showGate(r.error); return false;
     }
     CODE = code; D = r; D.skew = (r.now || Date.now()) - Date.now(); TERM = r.term;
+    cachePut(code, r);
     try {
       if (REMEMBER) localStorage.setItem('tc-code', code); else localStorage.removeItem('tc-code');
       localStorage.setItem('tc-term', TERM);
@@ -2143,13 +2167,46 @@ async function signIn(code, term, opts) {
     if (TAB !== 'me' && !D.sections.some(s => s.key === TAB)) TAB = 'me';
     render(); return true;
   } catch (e) {
+    if (e && e.offline) {                                   // no signal: show the schedule that was loaded last
+      const c = cacheGet(code, term);
+      if (c) { useCached(c, code); return true; }
+    }
     if (opts.keep) { render(); toast(e.message || String(e), true); return false; }
     showGate(e.message || String(e)); return false;
   }
+}
+
+/* ---------- offline: keep the last loaded schedule on this device ---------- */
+const cKey = (code, term) => 'tc-cache-' + normCode(code) + '-' + term;
+function cachePut(code, r) {
+  try {
+    localStorage.setItem(cKey(code, r.term), JSON.stringify({d: r, at: Date.now()}));
+    localStorage.setItem('tc-lastterm-' + normCode(code), r.term);
+  } catch (e) {}
+}
+function cacheGet(code, term) {
+  try {
+    const t = term || localStorage.getItem('tc-lastterm-' + normCode(code)) || '';
+    const v = t && localStorage.getItem(cKey(code, t));
+    return v ? JSON.parse(v) : null;
+  } catch (e) { return null; }
+}
+function cacheClear() {
+  try { Object.keys(localStorage).filter(k => k.indexOf('tc-cache-') === 0 || k.indexOf('tc-lastterm-') === 0).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+}
+function useCached(c, code) {
+  CODE = code; D = c.d; D.offline = true; D.cachedAt = c.at; D.skew = 0; TERM = D.term;
+  if (TAB !== 'me' && !D.sections.some(s => s.key === TAB)) TAB = 'me';
+  render();
+}
+function offBanner() {
+  if (!D || !D.offline) return '';
+  return '<div class="chb off"><i>' + '\uD83D\uDCF4' + '</i><div><b>You are offline</b><span>Showing the schedule you last loaded ' + ago(D.cachedAt) + '. It updates by itself when the signal is back.</span></div></div>';
 }   
 
   function signOut() {
     try { localStorage.removeItem('tc-code'); } catch (e) {}
+    cacheClear();                                           // the saved schedule leaves this device too
     CODE = ''; TAB = 'me'; GREETED = false; clearInterval(HI_T); showGate();
   }
 
@@ -2240,14 +2297,15 @@ async function signIn(code, term, opts) {
     $('app').innerHTML =
       '<div class="ctl"><div><div class="hi' + (GREETED ? '' : ' play') + '"><span class="hw"><span class="tm ' + greetNow()[2] + '">' + greetNow()[1] + '</span> ' + greetNow()[0] + ',</span><span class="hnw"><span class="hn">' + letters((m.Title ? m.Title + ' ' : '') + lastName(m.Name)) + '</span></span><span class="wvw"><span class="wv" title="Wave back!">' + E.wave + '</span></span></div><div class="mute hsub" id="hsub">' + esc(m.Name) + '</div></div>'
       + '<div class="ctr"><div class="termdd" id="termDd"><button type="button" id="termBtn"><span id="termLbl">' + esc(TERM) + '</span></button></div>'
-      + '<button id="rf">' + E.refresh + ' Refresh</button><button id="so">Sign out</button></div></div>'
-      + bannerHtml()
+      + '<button id="inst" hidden>\uD83D\uDCF2 Install app</button><button id="rf">' + E.refresh + ' Refresh</button><button id="so">Sign out</button></div></div>'
+      + offBanner() + bannerHtml()
       + '<div class="tabs">' + tabs + '</div>'
       + '<section class="card" id="sheetCard">' + sheetHtml() + '</section>';
     GREETED = true; startHiCycle();
     initTermDd();
-    $('rf').onclick = async () => { showLoading('Refreshing' + E.ell); const ok = await signIn(CODE, TERM, {keep: true}); if (ok) toast('Up to date'); };
+    $('rf').onclick = async () => { showLoading('Refreshing' + E.ell); const ok = await signIn(CODE, TERM, {keep: true}); if (ok) toast(D && D.offline ? 'Still offline. Showing your saved schedule.' : 'Up to date'); };
     $('so').onclick = signOut;
+    $('inst').onclick = installApp; syncInst();
     document.querySelectorAll('.tab').forEach(b => { b.onclick = () => { TAB = b.dataset.k; render(); }; });
     wireSheet(); fitSheet(); watchFit();
   }
@@ -2512,6 +2570,35 @@ function showLoading(msg) {
   $('chX').onclick = () => $('chDlg').close();
   $('chDlg').addEventListener('close', () => { if (D) render(); });      // refresh the banner after reading
     
+  /* ---------- install as an app (PWA) ---------- */
+  let DEFERRED = null;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  function syncInst() {
+    ['inst', 'inst2'].forEach(id => { const b = $(id); if (b) b.hidden = isStandalone() || !(DEFERRED || isIOS || INST_HINT); });
+  }
+  let INST_HINT = false;
+  async function installApp() {
+    if (DEFERRED) {
+      DEFERRED.prompt();
+      try { await DEFERRED.userChoice; } catch (e) {}
+      DEFERRED = null; syncInst();
+    } else $('instDlg').showModal();
+  }
+  $('instX').onclick = () => $('instDlg').close();
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); DEFERRED = e; syncInst(); });
+  addEventListener('appinstalled', () => { DEFERRED = null; syncInst(); toast('Installed. Open it from your home screen.'); });
+  matchMedia('(display-mode: standalone)').addEventListener && matchMedia('(display-mode: standalone)').addEventListener('change', syncInst);
+
+  /* when the signal comes back, quietly load the newest schedule */
+  addEventListener('online', async () => {
+    if (D && D.offline && CODE) { const ok = await signIn(CODE, TERM, {keep: true}); if (ok && D && !D.offline) toast('Back online. Schedule updated.'); }
+  });
+
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && location.hostname.indexOf('googleusercontent') < 0) {
+    addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+  }
+
   /* ---------- start ---------- */
   (function () {
     let c = '', t = '';
