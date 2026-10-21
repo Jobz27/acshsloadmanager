@@ -2087,7 +2087,7 @@
   const shortP = id => { const p = D && D.people[id]; return p ? ((p.Title ? p.Title + ' ' : '') + lastName(p.Name)).toUpperCase() : ''; };
 
   const defaultTab = () => matchMedia('(max-width:700px)').matches ? 'today' : 'me';
-  let D = null, CODE = '', TAB = defaultTab(), TERM = '', REMEMBER = true, GREETED = false;rue, GREETED = false;
+  let D = null, CODE = '', TAB = defaultTab(), TERM = '', REMEMBER = true, GREETED = false;true, GREETED = false;
   /* greeting follows the time on the teacher's own device */
   const GREET = [['Good morning', '\u2600\uFE0F', 'am'], ['Good afternoon', '\uD83C\uDF24\uFE0F', 'pm'], ['Good evening', '\uD83C\uDF19', 'ev']];
   const greetNow = () => { const h = new Date().getHours(); return GREET[h < 12 ? 0 : h < 18 ? 1 : 2]; };
