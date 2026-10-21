@@ -2,7 +2,7 @@
    - the page itself, icons and fonts are kept on the phone, so the app opens with no signal
    - the schedule data is NOT cached here: the page keeps the last loaded schedule itself (see Teacher.html)
    - everything else (the /admin page, the Apps Script server) goes straight to the network */
-const CACHE = 'acshs-shell-v1';
+const CACHE = 'acshs-shell-v2';
 const SHELL = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
