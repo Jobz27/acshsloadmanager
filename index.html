@@ -1169,6 +1169,17 @@
       opacity: .5
     }
 
+    .grid td.vac {
+      background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--mute) 10%, transparent), color-mix(in srgb, var(--mute) 10%, transparent) 8px, transparent 8px, transparent 16px);
+      color: var(--mute);
+      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--mute) 40%, transparent);
+      border-radius: 10px;
+      text-align: center;
+      font-weight: 800;
+      letter-spacing: .16em
+    }
+    .grid td.vac .sj { color: var(--mute); letter-spacing: .16em }
+
     .grid td.nt {
       background: repeating-linear-gradient(135deg, #fff3c4, #fff3c4 8px, #fff9df 8px, #fff9df 16px);
       color: #7a5b00;
@@ -3159,8 +3170,8 @@ function offBanner() {
         if (cov[di][i]) return;
         const s = starts[di][i];
         if (!s) { h += '<td class="' + band + '"></td>'; return; }
-        const l = s.l, lunch = isLunch(l), cl = l.Type === 'Class' && !lunch;
-        const kind = lunch ? 'lunch' : cl ? 'cls' : 'nt';
+        const l = s.l, lunch = isLunch(l), cl = l.Type === 'Class' && !lunch, vac = l.Type === 'Vacant';
+        const kind = lunch ? 'lunch' : vac ? 'vac' : cl ? 'cls' : 'nt';
         const who = isMe ? esc(l.Section) : esc(l.FacultyID ? shortP(l.FacultyID) : '');
         const rm = esc(l.Room || '');
         const whoHtml = isMe ? secPills(l.Section, SH) : who;
@@ -3186,7 +3197,7 @@ function offBanner() {
     if (TAB === 'today') return todayHtml();
     const cur = current(), loads = cur.loads, isMe = cur.kind === 'me';
     const tD = [0, 0, 0, 0, 0], nD = [0, 0, 0, 0, 0];
-    loads.forEach(l => dayIdx(l.Days).forEach(di => { if (l.Type === 'Class') tD[di] += hrs(l); else if (!isLunch(l)) nD[di] += hrs(l); }));
+    loads.forEach(l => dayIdx(l.Days).forEach(di => { if (l.Type === 'Class') tD[di] += hrs(l); else if (!isLunch(l) && l.Type !== 'Vacant') nD[di] += hrs(l); }));
     const T = tD.reduce((a, b) => a + b, 0), N = nD.reduce((a, b) => a + b, 0);
     const cls = loads.filter(l => l.Type === 'Class');
     const subs = [...new Set(cls.map(l => String(l.Subject).trim().toUpperCase()))].sort();
