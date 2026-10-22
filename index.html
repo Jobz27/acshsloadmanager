@@ -2787,6 +2787,9 @@
   .thit.on{border-color:var(--pri);background:var(--soft);box-shadow:0 0 0 2px color-mix(in srgb,var(--pri) 40%,transparent)}
   .thnote{margin:4px 0 0;font-size:11.5px;color:var(--mute)}
   @media print{.thpop,.thbtn{display:none!important}}
+
+    /* legend pills keep a pastel background in every theme, so the teacher name must use the pill's own dark ink */
+    .lg small { color: inherit !important; opacity: .85 }
 </style>
   <script>
     /* shows any script error on the page itself, so a blank screen can never hide it */
