@@ -1,6 +1,6 @@
 {
   "name": "AC SHS Load Manager",
-  "short_name": "AC SHS Load",
+  "short_name": "AC SHS Load Manager",
   "description": "Teacher access to your SHS teaching load and advisory classes.",
   "id": "/",
   "start_url": "/?source=pwa",
