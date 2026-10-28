@@ -3752,7 +3752,7 @@ function showLoading(msg) {
   }
   function emoText(n) {
     const p = n.parentNode;
-    if (!p || EMO_SKIP.test(p.nodeName.toUpperCase()) || (p.closest && p.closest('svg'))) return;
+    if (!p || EMO_SKIP.test(p.nodeName.toUpperCase()) || (p.closest && (p.closest('svg') || p.closest('.hi .tm, .hi .wv')))) return;
     const s = n.nodeValue;
     if (!EMO_TEST.test(s)) return;
     const frag = document.createDocumentFragment(); let last = 0, m;
